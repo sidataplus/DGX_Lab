@@ -1,0 +1,13 @@
+DGX Lab
+Copyright 2026 DGX Lab contributors
+
+This product is an independent educational simulator. It is not affiliated with,
+sponsored by, or endorsed by NVIDIA Corporation or the Slurm project.
+
+"NVIDIA", "DGX", "H200", "CUDA", and related names may be trademarks of
+NVIDIA Corporation. "Slurm" is associated with SchedMD LLC. Their use in this
+project is descriptive and educational.
+
+The resolved third-party dependency notice bundle must be generated from
+Cargo.lock before any binary release. This source pack intentionally does not
+invent a dependency inventory before a resolver has produced one.
