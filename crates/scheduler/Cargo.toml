@@ -1,0 +1,13 @@
+[package]
+name = "scheduler"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+dgxlab-contracts.workspace = true
+slurm-model.workspace = true
+serde.workspace = true
+thiserror.workspace = true
