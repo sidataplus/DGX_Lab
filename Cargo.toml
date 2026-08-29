@@ -1,0 +1,103 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/dgxlab-contracts",
+  "crates/slurm-model",
+  "crates/scheduler",
+  "crates/virtual-fs",
+  "crates/workloads",
+  "crates/actors",
+  "crates/sim-core",
+  "crates/virtual-shell",
+  "crates/scenarios",
+  "crates/grading",
+  "crates/assessment",
+  "crates/persistence-codec",
+  "crates/report-renderer",
+  "crates/scenario-compiler",
+  "crates/sim-session",
+  "crates/sim-worker-wasm",
+  "crates/web-ui",
+  "src-tauri",
+]
+default-members = [
+  "crates/dgxlab-contracts",
+  "crates/slurm-model",
+  "crates/scheduler",
+  "crates/virtual-fs",
+  "crates/workloads",
+  "crates/actors",
+  "crates/sim-core",
+  "crates/virtual-shell",
+  "crates/scenarios",
+  "crates/grading",
+  "crates/assessment",
+  "crates/persistence-codec",
+  "crates/report-renderer",
+  "crates/scenario-compiler",
+  "crates/sim-session",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+authors = ["DGX Lab contributors"]
+repository = "https://example.invalid/dgx-lab"
+rust-version = "1.88"
+
+[workspace.dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+thiserror = "2.0"
+sha2 = "0.11"
+hex = "0.4"
+clap = { version = "4.5", features = ["derive"] }
+leptos = { version = "=0.8.20", features = ["csr"] }
+wasm-bindgen = "=0.2.126"
+serde-wasm-bindgen = "0.6"
+web-sys = { version = "0.3", features = [
+  "Document",
+  "Element",
+  "Event",
+  "HtmlInputElement",
+  "HtmlTextAreaElement",
+  "KeyboardEvent",
+  "MessageEvent",
+  "Storage",
+  "Window",
+  "Worker",
+] }
+js-sys = "0.3"
+console_error_panic_hook = "0.1"
+console_log = "1.0"
+log = "0.4"
+tauri = "=2.11.5"
+tauri-build = "=2.6.3"
+
+# Internal crates
+dgxlab-contracts = { path = "crates/dgxlab-contracts" }
+slurm-model = { path = "crates/slurm-model" }
+scheduler = { path = "crates/scheduler" }
+virtual-fs = { path = "crates/virtual-fs" }
+workloads = { path = "crates/workloads" }
+actors = { path = "crates/actors" }
+sim-core = { path = "crates/sim-core" }
+virtual-shell = { path = "crates/virtual-shell" }
+scenarios = { path = "crates/scenarios" }
+grading = { path = "crates/grading" }
+assessment = { path = "crates/assessment" }
+persistence-codec = { path = "crates/persistence-codec" }
+report-renderer = { path = "crates/report-renderer" }
+sim-session = { path = "crates/sim-session" }
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
+
+[profile.dev]
+debug = 1

@@ -1,0 +1,27 @@
+name: Security boundary
+on:
+  push:
+    paths:
+      - 'Cargo.toml'
+      - 'crates/**'
+      - 'src-tauri/**'
+      - 'prototype/**'
+      - 'scripts/check_forbidden_apis.py'
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  no-real-infrastructure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python3 scripts/check_forbidden_apis.py
+      - name: Assert CSP and capability allowlist
+        run: python3 scripts/validate_all.py
+      - name: Reject institutional endpoints in product source
+        shell: bash
+        run: |
+          ! grep -RInE '(orca-headnode|orca-h200|10\.10\.10\.|172\.29\.)' crates src-tauri prototype scenario-src course-src question-src
