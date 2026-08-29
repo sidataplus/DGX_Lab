@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dgxlab.local/schemas/certification-blueprint.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "revision",
+    "weights",
+    "pass_policy",
+    "sections"
+  ],
+  "properties": {
+    "schema": {
+      "const": "dgxlab.certification-blueprint/v1"
+    },
+    "id": {
+      "type": "string"
+    },
+    "revision": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "weights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "practical",
+        "multiple_choice",
+        "fill_blank"
+      ],
+      "properties": {
+        "practical": {
+          "type": "integer"
+        },
+        "multiple_choice": {
+          "type": "integer"
+        },
+        "fill_blank": {
+          "type": "integer"
+        }
+      }
+    },
+    "pass_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "overall_percent",
+        "knowledge_percent",
+        "require_all_critical_practical"
+      ],
+      "properties": {
+        "overall_percent": {
+          "type": "integer"
+        },
+        "knowledge_percent": {
+          "type": "integer"
+        },
+        "require_all_critical_practical": {
+          "type": "boolean"
+        },
+        "attempt_limit": {
+          "type": "integer"
+        }
+      }
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "competencies",
+          "question_count"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "competencies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "question_count": {
+            "type": "integer"
+          },
+          "practical_scenario": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

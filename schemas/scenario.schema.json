@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dgxlab.local/schemas/scenario.schema.json",
+  "title": "DGX Lab scenario",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "revision",
+    "title",
+    "cluster_profile",
+    "learner"
+  ],
+  "properties": {
+    "schema": {
+      "const": "dgxlab.scenario/v1"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "revision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cluster_profile": {
+      "type": "string",
+      "minLength": 1
+    },
+    "learner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "username",
+        "account",
+        "qos"
+      ],
+      "properties": {
+        "username": {
+          "type": "string",
+          "pattern": "^[a-z_][a-z0-9_-]*$"
+        },
+        "account": {
+          "type": "string"
+        },
+        "qos": {
+          "type": "string"
+        }
+      }
+    },
+    "initial_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "content"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^/(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+          },
+          "content": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "actors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "kind",
+          "username"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "scripted",
+              "background_load",
+              "policy_driven",
+              "infrastructure"
+            ]
+          },
+          "username": {
+            "type": "string"
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "objectives": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "competency",
+          "description"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "competency": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "hints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "level",
+          "text"
+        ],
+        "properties": {
+          "level": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "text": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "points",
+          "assert"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "critical": {
+            "type": "boolean",
+            "default": false
+          },
+          "points": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "assert": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  }
+}

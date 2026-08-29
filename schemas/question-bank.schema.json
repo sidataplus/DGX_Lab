@@ -1,0 +1,276 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dgxlab.local/schemas/question-bank.schema.json",
+  "title": "DGX Lab question bank",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "revision",
+    "questions"
+  ],
+  "properties": {
+    "schema": {
+      "const": "dgxlab.question-bank/v1"
+    },
+    "id": {
+      "type": "string"
+    },
+    "revision": {
+      "type": "string"
+    },
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/single_choice"
+          },
+          {
+            "$ref": "#/$defs/multi_select"
+          },
+          {
+            "$ref": "#/$defs/fill_blank"
+          }
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "option": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "text"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    },
+    "base": {
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "competency",
+        "prompt",
+        "points",
+        "explanation"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "competency": {
+          "type": "string"
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "points": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "explanation": {
+          "type": "string"
+        }
+      }
+    },
+    "single_choice": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/base"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "type",
+            "competency",
+            "prompt",
+            "points",
+            "explanation",
+            "options",
+            "correct"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "type": {
+              "const": "single_choice"
+            },
+            "competency": {
+              "type": "string"
+            },
+            "prompt": {
+              "type": "string"
+            },
+            "points": {
+              "type": "integer"
+            },
+            "explanation": {
+              "type": "string"
+            },
+            "options": {
+              "type": "array",
+              "minItems": 2,
+              "items": {
+                "$ref": "#/$defs/option"
+              }
+            },
+            "correct": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "multi_select": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/base"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "type",
+            "competency",
+            "prompt",
+            "points",
+            "explanation",
+            "options",
+            "correct"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "type": {
+              "const": "multi_select"
+            },
+            "competency": {
+              "type": "string"
+            },
+            "prompt": {
+              "type": "string"
+            },
+            "points": {
+              "type": "integer"
+            },
+            "explanation": {
+              "type": "string"
+            },
+            "options": {
+              "type": "array",
+              "minItems": 2,
+              "items": {
+                "$ref": "#/$defs/option"
+              }
+            },
+            "correct": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string"
+              }
+            },
+            "incorrect_penalty_basis_points": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            }
+          }
+        }
+      ]
+    },
+    "fill_blank": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/base"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "type",
+            "competency",
+            "prompt",
+            "points",
+            "explanation",
+            "blanks"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "type": {
+              "const": "fill_blank"
+            },
+            "competency": {
+              "type": "string"
+            },
+            "prompt": {
+              "type": "string"
+            },
+            "points": {
+              "type": "integer"
+            },
+            "explanation": {
+              "type": "string"
+            },
+            "blanks": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "id",
+                  "accepted"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "accepted": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "case_insensitive": {
+                    "type": "boolean"
+                  },
+                  "trim": {
+                    "type": "boolean"
+                  },
+                  "normalize_whitespace": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
