@@ -1,0 +1,8 @@
+# These must be rejected or handled only by the virtual parser.
+ssh root@cluster
+curl https://example.invalid
+bash -c 'rm -rf /'
+python -c 'import os; os.system("id")'
+sbatch --wrap='touch /tmp/real-host-file'
+cat ../../../../etc/passwd
+../../../../outside

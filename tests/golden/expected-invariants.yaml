@@ -1,0 +1,13 @@
+schema: dgxlab.golden-invariants/v1
+scenario: guided-one-gpu
+seed: 42
+assertions:
+- world.cluster.nodes.dgx-h200-01.capacity.gpus: 8
+- learner.jobs.count: 1
+- learner.jobs[0].requested.gpus: 1
+- learner.jobs[0].terminal_state: COMPLETED
+- shell.active_job_id: null
+- commands.include:
+  - sinfo
+  - nvidia-smi -L
+  - sacct

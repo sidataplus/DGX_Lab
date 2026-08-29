@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="No-build DGX Lab functional prototype">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>DGX Lab Prototype</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand-block">
+      <div class="app-icon" aria-hidden="true">›_</div>
+      <div><div class="brand">DGX Lab</div><div class="subtitle">Interactive SLURM Training Simulator</div></div>
+    </div>
+    <div class="top-controls">
+      <label>Scenario
+        <select id="scenario-select">
+          <option value="dgx-h200-8">DGX-H200-8</option>
+          <option value="dgx-contended">DGX-Contended</option>
+          <option value="dgx-degraded">DGX-Degraded</option>
+        </select>
+      </label>
+      <div class="segmented" aria-label="Simulation speed">
+        <button data-speed="1" class="active">1×</button><button data-speed="10">10×</button><button data-speed="60">60×</button>
+      </div>
+      <button id="pause-btn" class="primary">Pause</button>
+      <span class="pill success">Offline · Local</span><span class="pill purple">Simulation</span>
+    </div>
+  </header>
+
+  <nav class="mode-tabs" aria-label="Workspace mode">
+    <button class="mode-tab active" data-mode="learn">Learn</button>
+    <button class="mode-tab" data-mode="sandbox">Sandbox</button>
+    <button class="mode-tab" data-mode="certification">Certification</button>
+  </nav>
+
+  <main>
+    <section id="learn-view" class="mode-view active">
+      <aside class="panel instruction-panel">
+        <div class="section-label">GUIDED LAB</div>
+        <h1>Lab 04 — One GPU Allocation</h1>
+        <p class="muted">Request one H200 GPU, verify isolation, then release it cleanly.</p>
+        <div class="section-label">PROGRESS</div>
+        <ol id="progress-list" class="progress-list"></ol>
+        <div class="button-row"><button id="hint-btn">Hint</button><button id="reset-lab-btn">Reset Lab</button></div>
+        <div id="hint-box" class="notice hidden" role="status"></div>
+        <div class="section-label">COMPETENCY EVIDENCE</div>
+        <ul id="competency-list" class="check-list"></ul>
+      </aside>
+      <section class="panel terminal-panel">
+        <div class="panel-header"><span><span class="status-dot"></span> Terminal</span><button id="clear-terminal">Clear</button></div>
+        <div id="terminal-output" class="terminal-output" aria-live="polite"></div>
+        <form id="terminal-form" class="terminal-form">
+          <span id="prompt">learner@dgx-login-01:~$</span><input id="terminal-input" autocomplete="off" spellcheck="false" aria-label="Simulated command"><button type="submit">Run</button>
+        </form>
+        <div class="sim-note">This is a simulated environment. No real resources are used.</div>
+      </section>
+      <aside class="right-stack">
+        <section class="panel cluster-panel">
+          <div class="panel-header"><span>DGX-H200-8</span><span class="online">● Online</span></div>
+          <div class="cluster-meta">8 × H200 · 224 logical CPUs · 1.8 TiB schedulable RAM</div>
+          <div id="gpu-grid" class="gpu-grid"></div>
+          <div class="meters"><div><span>CPU</span><strong id="cpu-meter">0%</strong></div><div><span>Memory</span><strong id="memory-meter">0%</strong></div></div>
+        </section>
+        <section class="panel queue-panel">
+          <div class="panel-header"><span>JOB QUEUE</span><span id="queue-count" class="muted"></span></div>
+          <div class="table-wrap"><table><thead><tr><th>ID</th><th>User</th><th>State</th><th>GPUs</th><th>Reason</th></tr></thead><tbody id="queue-body"></tbody></table></div>
+        </section>
+      </aside>
+      <section class="panel bottom-panel">
+        <div><div class="section-label">SELECTED JOB</div><div id="job-details" class="job-details muted">No learner job selected.</div></div>
+        <div><div class="section-label">EVENT TIMELINE</div><ol id="event-list" class="event-list"></ol></div>
+      </section>
+    </section>
+
+    <section id="sandbox-view" class="mode-view sandbox-layout">
+      <aside class="panel">
+        <div class="section-label">SANDBOX / FREE PLAY</div><h1>Batch workload playground</h1>
+        <p class="muted">Edit a virtual script, submit it, and inspect how simulated users affect scheduling.</p>
+        <button id="sandbox-contended">Load Contended Scenario</button>
+        <button id="sandbox-clear" class="danger-subtle">Clear learner jobs</button>
+        <div class="notice"><strong>Tip:</strong> submit with all GPUs occupied, then use <code>squeue</code> and <code>scontrol show job &lt;id&gt;</code>.</div>
+      </aside>
+      <section class="panel editor-panel">
+        <div class="panel-header"><span>train.sbatch</span><button id="validate-script">Validate</button></div>
+        <textarea id="script-editor" spellcheck="false" aria-label="Virtual batch script"></textarea>
+        <div class="button-row"><button id="submit-script" class="primary">Submit batch job</button><span id="script-status" class="muted"></span></div>
+      </section>
+      <section class="panel sandbox-monitor">
+        <div class="section-label">QUEUE TIMELINE</div><div id="timeline-bars" class="timeline-bars"></div>
+        <div class="section-label">RESOURCE UTILIZATION</div><canvas id="util-canvas" width="720" height="180" aria-label="Synthetic utilization chart"></canvas>
+      </section>
+    </section>
+
+    <section id="certification-view" class="mode-view certification-layout">
+      <aside class="panel exam-overview">
+        <div class="section-label">CERTIFICATION OVERVIEW</div><h1>DGX Lab SLURM Operator</h1>
+        <div class="score-ring"><span id="exam-score">—</span><small>current score</small></div>
+        <div class="exam-stat"><span>Questions</span><strong id="exam-progress">0 / 3</strong></div>
+        <div class="notice">Standalone local assessment. Identity is not independently verified.</div>
+      </aside>
+      <section class="panel assessment-panel">
+        <form id="exam-form">
+          <fieldset><legend>1. A job is PENDING with reason Resources. What is the most likely explanation?</legend>
+            <label><input type="radio" name="q1" value="a"> The job already exceeded its time limit.</label>
+            <label><input type="radio" name="q1" value="b"> Eligible requested resources are currently unavailable.</label>
+            <label><input type="radio" name="q1" value="c"> The script is running successfully.</label>
+          </fieldset>
+          <fieldset><legend>2. Select evidence supporting correct one-GPU isolation.</legend>
+            <label><input type="checkbox" name="q2" value="a"> One value in CUDA_VISIBLE_DEVICES</label>
+            <label><input type="checkbox" name="q2" value="b"> One visible device in nvidia-smi -L inside the job</label>
+            <label><input type="checkbox" name="q2" value="c"> Eight visible GPUs inside the job</label>
+          </fieldset>
+          <fieldset><legend>3. Fill the blank: <code>srun --gres=____:1 --pty bash</code></legend>
+            <input id="q3" type="text" autocomplete="off" aria-label="Fill blank answer">
+          </fieldset>
+          <div class="button-row"><button type="submit" class="primary">Submit Assessment</button><button type="button" id="reset-exam">Reset</button></div>
+        </form>
+        <div id="exam-feedback" class="notice hidden" role="status"></div>
+      </section>
+      <aside class="panel competency-map"><div class="section-label">COMPETENCY MAP</div><div id="competency-bars"></div><div class="section-label">SECURE EVIDENCE (LOCAL)</div><ul class="check-list"><li class="done">Terminal transcript</li><li class="done">Responses</li><li class="done">Practical state</li><li>Export wiring pending in Rust milestone</li></ul></aside>
+    </section>
+  </main>
+
+  <footer><span>Virtual Cluster · <strong id="footer-scenario">DGX-H200-8</strong></span><span>Sim time: <span id="sim-time">00:00:00</span></span><span>No real scheduler access</span></footer>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+{
+  "schema": "dgxlab.replay-plan/v1",
+  "scenario_id": "guided-one-gpu",
+  "scenario_revision": "1.0.0",
+  "seed": 42,
+  "events": [
+    {
+      "type": "command",
+      "value": "sinfo"
+    },
+    {
+      "type": "command",
+      "value": "srun --gres=gpu:h200:1 --cpus-per-task=8 --mem=64G --time=00:30:00 --pty bash"
+    },
+    {
+      "type": "command",
+      "value": "echo $SLURM_JOB_ID"
+    },
+    {
+      "type": "command",
+      "value": "echo $CUDA_VISIBLE_DEVICES"
+    },
+    {
+      "type": "command",
+      "value": "nvidia-smi -L"
+    },
+    {
+      "type": "command",
+      "value": "exit"
+    },
+    {
+      "type": "command",
+      "value": "sacct"
+    }
+  ],
+  "expected": "two independent runs have equal state and evidence digests"
+}

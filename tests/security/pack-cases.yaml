@@ -1,0 +1,17 @@
+schema: dgxlab.security-fixtures/v1
+cases:
+- id: path-traversal
+  path: ../../evil.js
+  expect: reject
+- id: absolute-host-path
+  path: /etc/passwd
+  expect: reject_for_import_pack
+- id: executable-js
+  path: payload.js
+  expect: reject
+- id: wasm-plugin
+  path: plugin.wasm
+  expect: reject
+- id: safe-markdown
+  path: labs/intro.md
+  expect: accept
