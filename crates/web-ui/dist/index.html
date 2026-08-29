@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="DGX Lab offline SLURM training simulator">
+  <link rel="stylesheet" href="/style-6cf1cb76f971e2d8.css" integrity="sha384-lVSRS6l7SdreLGjXbKTnVRPSJFMzKq+L6OGZTO8gqWWLp28RD5k9YtP5XOhumSSB"/>
+  <title>DGX Lab</title>
+<link rel="modulepreload" href="/web-ui-c3c61038d9dbfde7.js" crossorigin="anonymous" integrity="sha384-qKXV1B+tK625rS6xOFCSuZRD2IshLB++wlyPoqcI98aBriQpjEefOd9y3lGAf6y0"><link rel="preload" href="/web-ui-c3c61038d9dbfde7_bg.wasm" crossorigin="anonymous" integrity="sha384-6N7zobHTATiS55/kYTm8GDloWHRtJU0O6ko5YlLzUuoBUWmgIsqp4XfQJJyvNrIC" as="fetch" type="application/wasm"></head>
+<body>
+<script type="module">
+import init, * as bindings from '/web-ui-c3c61038d9dbfde7.js';
+const wasm = await init({ module_or_path: '/web-ui-c3c61038d9dbfde7_bg.wasm' });
+
+
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+
+</script></body>
+</html>

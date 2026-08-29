@@ -1,0 +1,36 @@
+[package]
+name = "web-ui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+dgxlab-contracts.workspace = true
+sim-session.workspace = true
+assessment.workspace = true
+leptos.workspace = true
+wasm-bindgen.workspace = true
+console_error_panic_hook.workspace = true
+log.workspace = true
+console_log.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+js-sys.workspace = true
+web-sys = { version = "0.3", features = [
+  "Window",
+  "Storage",
+  "IdbFactory",
+  "IdbOpenDbRequest",
+  "IdbDatabase",
+  "IdbTransaction",
+  "IdbTransactionMode",
+  "IdbObjectStore",
+  "IdbRequest",
+  "Event",
+  "EventTarget",
+] }
