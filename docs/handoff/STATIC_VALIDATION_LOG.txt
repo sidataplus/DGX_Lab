@@ -1,0 +1,39 @@
+DGX Lab Dev Pack v0.1.0
+Static validation evidence
+Date: 2026-08-05
+
+Environment capabilities
+------------------------
+Python: 3.13.5
+Node.js: v22.16.0
+cargo: unavailable
+rustc: unavailable
+Trunk: unavailable
+Tauri CLI: unavailable
+
+Command
+-------
+bash scripts/run_static_checks.sh
+
+Result
+------
+validated 6 scenarios, course content, questions, Tauri boundary, Cargo manifests, 241 requirement links, and prototype
+forbidden capability check passed
+static Rust delimiter/unsafe-code sanity passed (not compilation)
+content pack built successfully
+SHA-256 manifest generated
+manifest verified
+
+Prototype HTTP smoke
+--------------------
+Served prototype/ using Python's loopback-only static HTTP server.
+GET / -> HTTP 200, 8434 bytes
+GET /app.js -> HTTP 200, 17770 bytes
+
+Interpretation
+--------------
+These checks establish declarative-content validity, cross-reference integrity,
+security-boundary source checks, JavaScript/Python syntax, static Rust delimiter
+sanity, deterministic pack construction, and file-manifest integrity. They do not
+establish successful Rust compilation, native/WASM parity, Tauri packaging, code
+signing, or cross-platform runtime behavior.
