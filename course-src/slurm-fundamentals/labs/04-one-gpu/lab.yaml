@@ -1,0 +1,56 @@
+schema: dgxlab.lab/v1
+id: 04-one-gpu
+revision: 1.0.0
+title: One GPU Allocation and Isolation
+scenario: guided-one-gpu
+estimated_minutes: 30
+prerequisites:
+- 03-cpu-memory
+objectives:
+- id: 04-one-gpu-objective-1
+  competency: gpu-allocation
+  description: Inspect idle GPU capacity.
+- id: 04-one-gpu-objective-2
+  competency: gpu-isolation
+  description: Request one H200 GPU, 8 CPUs, and 64 GiB memory.
+- id: 04-one-gpu-objective-3
+  competency: gpu-isolation
+  description: Verify `CUDA_VISIBLE_DEVICES` and `nvidia-smi -L`.
+- id: 04-one-gpu-objective-4
+  competency: gpu-isolation
+  description: Release the allocation.
+steps:
+- id: step-1
+  instruction: Inspect idle GPU capacity.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: false
+- id: step-2
+  instruction: Request one H200 GPU, 8 CPUs, and 64 GiB memory.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: false
+- id: step-3
+  instruction: Verify `CUDA_VISIBLE_DEVICES` and `nvidia-smi -L`.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: true
+- id: step-4
+  instruction: Release the allocation.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: true
+hints:
+- level: 1
+  text: Inspect state before guessing.
+- level: 2
+  text: Use a read-only scheduler command that exposes the relevant object.
+- level: 3
+  text: Review the command reference card for this module.
+completion:
+  require_all_critical: true
+  minimum_points_percent: 80

@@ -1,0 +1,585 @@
+schema: dgxlab.question-bank/v1
+id: slurm-fundamentals-core
+revision: 1.0.0
+questions:
+- id: mc-001
+  type: single_choice
+  competency: cluster-fundamentals
+  prompt: Which Slurm object groups nodes under common scheduling rules?
+  options:
+  - id: a
+    text: Job step
+  - id: b
+    text: Partition
+  - id: c
+    text: Environment module
+  - id: d
+    text: Checkpoint
+  correct: b
+  points: 2
+  explanation: A partition groups nodes and applies scheduling/access policies.
+- id: mc-002
+  type: single_choice
+  competency: scheduling
+  prompt: A job is PENDING with reason Resources. What does that most directly mean?
+  options:
+  - id: a
+    text: The script has already failed
+  - id: b
+    text: Eligible resources are currently unavailable
+  - id: c
+    text: The account is invalid
+  - id: d
+    text: The time limit has expired
+  correct: b
+  points: 2
+  explanation: Resources indicates an otherwise eligible job cannot currently be allocated.
+- id: mc-003
+  type: single_choice
+  competency: scheduling
+  prompt: Which command is most useful for seeing active and pending jobs?
+  options:
+  - id: a
+    text: squeue
+  - id: b
+    text: sacctmgr
+  - id: c
+    text: nvidia-smi
+  - id: d
+    text: lfs
+  correct: a
+  points: 2
+  explanation: squeue presents queued and running jobs.
+- id: mc-004
+  type: single_choice
+  competency: accounting
+  prompt: Which command is designed to inspect completed job accounting?
+  options:
+  - id: a
+    text: sacct
+  - id: b
+    text: srun
+  - id: c
+    text: salloc
+  - id: d
+    text: module
+  correct: a
+  points: 2
+  explanation: sacct queries accounting records, including terminal state and allocated resources.
+- id: mc-005
+  type: single_choice
+  competency: gpu-allocation
+  prompt: What should a one-GPU job normally see when device isolation is working?
+  options:
+  - id: a
+    text: All GPUs
+  - id: b
+    text: Only its allocated GPU
+  - id: c
+    text: No GPU until root enables it
+  - id: d
+    text: A random number of GPUs
+  correct: b
+  points: 2
+  explanation: Device confinement exposes only allocated devices to the job.
+- id: mc-006
+  type: single_choice
+  competency: troubleshooting
+  prompt: Which state most clearly indicates the wall-time limit was reached?
+  options:
+  - id: a
+    text: COMPLETED
+  - id: b
+    text: TIMEOUT
+  - id: c
+    text: PENDING
+  - id: d
+    text: NODE_IDLE
+  correct: b
+  points: 2
+  explanation: TIMEOUT is the terminal state for expiration of the requested limit.
+- id: mc-007
+  type: single_choice
+  competency: troubleshooting
+  prompt: Which evidence best distinguishes host-memory OOM from GPU-memory OOM?
+  options:
+  - id: a
+    text: Job name
+  - id: b
+    text: Log and cgroup/OOM messages
+  - id: c
+    text: Partition name
+  - id: d
+    text: Submission time
+  correct: b
+  points: 2
+  explanation: The error source and log signature identify which memory boundary was exceeded.
+- id: mc-008
+  type: single_choice
+  competency: batch-jobs
+  prompt: What is the primary purpose of `#SBATCH` lines in a batch script?
+  options:
+  - id: a
+    text: Comments ignored by Slurm
+  - id: b
+    text: Scheduler options parsed at submission
+  - id: c
+    text: Python configuration
+  - id: d
+    text: Container metadata
+  correct: b
+  points: 2
+  explanation: sbatch reads these directive lines as job options.
+- id: mc-009
+  type: single_choice
+  competency: checkpointing
+  prompt: Why checkpoint a long training run?
+  options:
+  - id: a
+    text: To make the GPU hotter
+  - id: b
+    text: To resume after interruption without restarting from zero
+  - id: c
+    text: To avoid declaring memory
+  - id: d
+    text: To bypass the scheduler
+  correct: b
+  points: 2
+  explanation: A valid checkpoint reduces lost computation after interruption.
+- id: mc-010
+  type: single_choice
+  competency: dependencies
+  prompt: What does an `afterok` dependency express?
+  options:
+  - id: a
+    text: Start after the referenced job succeeds
+  - id: b
+    text: Start before the referenced job
+  - id: c
+    text: Use the same GPU UUID
+  - id: d
+    text: Cancel the referenced job
+  correct: a
+  points: 2
+  explanation: afterok releases the dependent job after successful completion.
+- id: mc-011
+  type: single_choice
+  competency: containers
+  prompt: Why use `--nv` with a simulated Singularity GPU workload?
+  options:
+  - id: a
+    text: Expose allocated GPU support inside the container
+  - id: b
+    text: Request network access
+  - id: c
+    text: Skip Slurm allocation
+  - id: d
+    text: Create a checkpoint
+  correct: a
+  points: 2
+  explanation: The runtime integrates GPU devices/libraries already allocated by the scheduler.
+- id: mc-012
+  type: single_choice
+  competency: efficiency
+  prompt: A job requests 512 GiB but peaks at 36 GiB. What is the best first interpretation?
+  options:
+  - id: a
+    text: The request may be substantially oversized
+  - id: b
+    text: The job should request more GPUs
+  - id: c
+    text: Accounting is irrelevant
+  - id: d
+    text: The scheduler automatically refunds memory
+  correct: a
+  points: 2
+  explanation: A large persistent gap between request and observed peak suggests right-sizing opportunity.
+- id: mc-013
+  type: single_choice
+  competency: job-steps
+  prompt: What is a job step?
+  options:
+  - id: a
+    text: A partition definition
+  - id: b
+    text: A task launch inside an allocation
+  - id: c
+    text: A physical GPU
+  - id: d
+    text: A user account
+  correct: b
+  points: 2
+  explanation: srun commonly creates a step inside an existing allocation.
+- id: mc-014
+  type: single_choice
+  competency: qos
+  prompt: A QOSMaxJobsPerUserLimit pending reason points to what?
+  options:
+  - id: a
+    text: A per-user policy limit
+  - id: b
+    text: GPU hardware failure
+  - id: c
+    text: A syntax error
+  - id: d
+    text: A missing checkpoint
+  correct: a
+  points: 2
+  explanation: The job is constrained by QOS policy on concurrent jobs per user.
+- id: mc-015
+  type: single_choice
+  competency: gpu-topology
+  prompt: Why might four GPUs provide less than four times single-GPU throughput?
+  options:
+  - id: a
+    text: Communication and input overheads
+  - id: b
+    text: Slurm disables arithmetic
+  - id: c
+    text: GPU UUIDs change
+  - id: d
+    text: Time limits only work on one GPU
+  correct: a
+  points: 2
+  explanation: Synchronization, communication, input, and serial work limit scaling.
+- id: mc-016
+  type: single_choice
+  competency: security
+  prompt: What should DGX Lab do with a command such as `ssh cluster`?
+  options:
+  - id: a
+    text: Execute it locally
+  - id: b
+    text: Forward it to a server
+  - id: c
+    text: Reject it as unsupported simulation input
+  - id: d
+    text: Ask for a password
+  correct: c
+  points: 2
+  explanation: DGX Lab has no real shell or network bridge.
+- id: mc-017
+  type: single_choice
+  competency: pending-reasons
+  prompt: Which pending reason most directly indicates a dependency has not yet been satisfied?
+  options:
+  - id: a
+    text: Dependency
+  - id: b
+    text: Resources
+  - id: c
+    text: Priority
+  - id: d
+    text: None
+  correct: a
+  points: 2
+  explanation: Dependency is explicit and should not be misdiagnosed as resource scarcity.
+- id: mc-018
+  type: single_choice
+  competency: reservations
+  prompt: What is a reservation primarily used for?
+  options:
+  - id: a
+    text: Guarantee selected resources in a defined time window
+  - id: b
+    text: Increase model accuracy
+  - id: c
+    text: Replace accounting
+  - id: d
+    text: Encrypt a checkpoint
+  correct: a
+  points: 2
+  explanation: Reservations set aside resources for defined users/accounts and times.
+- id: ms-001
+  type: multi_select
+  competency: troubleshooting
+  prompt: Which are useful first-line sources when diagnosing a failed job?
+  options:
+  - id: a
+    text: sacct state and exit code
+  - id: b
+    text: stdout/stderr logs
+  - id: c
+    text: requested versus observed resources
+  - id: d
+    text: Changing the job name repeatedly
+  correct:
+  - a
+  - b
+  - c
+  incorrect_penalty_basis_points: 2500
+  points: 3
+  explanation: State, logs, and resource evidence narrow the root cause.
+- id: ms-002
+  type: multi_select
+  competency: batch-jobs
+  prompt: Which belong in a robust long-running training job?
+  options:
+  - id: a
+    text: Explicit resource requests
+  - id: b
+    text: Periodic checkpoints
+  - id: c
+    text: Durable output paths
+  - id: d
+    text: Unbounded runtime with no logs
+  correct:
+  - a
+  - b
+  - c
+  incorrect_penalty_basis_points: 2500
+  points: 3
+  explanation: Resource declaration, checkpointing, and logs improve reproducibility and recovery.
+- id: ms-003
+  type: multi_select
+  competency: gpu-isolation
+  prompt: Which observations support correct one-GPU isolation?
+  options:
+  - id: a
+    text: CUDA_VISIBLE_DEVICES contains one device
+  - id: b
+    text: nvidia-smi -L lists one visible device in the job
+  - id: c
+    text: sacct records one GPU
+  - id: d
+    text: The login node shows eight GPUs
+  correct:
+  - a
+  - b
+  - c
+  incorrect_penalty_basis_points: 2500
+  points: 3
+  explanation: Allocation environment, device visibility, and accounting should agree.
+- id: ms-004
+  type: multi_select
+  competency: efficiency
+  prompt: Which changes could improve shared-cluster efficiency without changing the scientific task?
+  options:
+  - id: a
+    text: Right-size memory
+  - id: b
+    text: Right-size CPU
+  - id: c
+    text: Use checkpoint/resume
+  - id: d
+    text: Always request all GPUs
+  correct:
+  - a
+  - b
+  - c
+  incorrect_penalty_basis_points: 2500
+  points: 3
+  explanation: Evidence-based requests and recoverability reduce waste; grabbing all GPUs is not an efficiency principle.
+- id: ms-005
+  type: multi_select
+  competency: containers
+  prompt: Which statements are correct about a containerized Slurm job?
+  options:
+  - id: a
+    text: Slurm allocates resources before the container starts
+  - id: b
+    text: The container should see only allocated devices
+  - id: c
+    text: A container removes the need for resource requests
+  - id: d
+    text: Image/version should be recorded
+  correct:
+  - a
+  - b
+  - d
+  incorrect_penalty_basis_points: 2500
+  points: 3
+  explanation: Containers improve reproducibility but do not replace scheduling or isolation.
+- id: ms-006
+  type: multi_select
+  competency: scheduling
+  prompt: Which can legitimately keep an otherwise valid job pending?
+  options:
+  - id: a
+    text: Resources
+  - id: b
+    text: Priority
+  - id: c
+    text: Dependency
+  - id: d
+    text: The learner dislikes waiting
+  correct:
+  - a
+  - b
+  - c
+  incorrect_penalty_basis_points: 2500
+  points: 3
+  explanation: These are real scheduler causes; impatience remains outside the state machine.
+- id: ms-007
+  type: multi_select
+  competency: checkpointing
+  prompt: Which make a checkpoint suitable for resume?
+  options:
+  - id: a
+    text: Model state
+  - id: b
+    text: Optimizer/scheduler state when required
+  - id: c
+    text: Known parent configuration/data cursor
+  - id: d
+    text: A filename containing “final” only
+  correct:
+  - a
+  - b
+  - c
+  incorrect_penalty_basis_points: 2500
+  points: 3
+  explanation: A usable resume artifact includes the state required to continue consistently.
+- id: ms-008
+  type: multi_select
+  competency: security
+  prompt: Which are forbidden capabilities in DGX Lab?
+  options:
+  - id: a
+    text: Real process spawning
+  - id: b
+    text: SSH
+  - id: c
+    text: Real Slurm invocation
+  - id: d
+    text: Virtual `squeue` output
+  correct:
+  - a
+  - b
+  - c
+  incorrect_penalty_basis_points: 2500
+  points: 3
+  explanation: Only simulator operations are allowed; virtual scheduler output is the product.
+- id: fb-001
+  type: fill_blank
+  competency: gpu-allocation
+  prompt: 'Complete the resource token: `srun --gres=____:1 --pty bash`'
+  blanks:
+  - id: blank-1
+    accepted:
+    - gpu:h200
+    - gpu
+    case_insensitive: true
+    trim: true
+    normalize_whitespace: true
+  points: 2
+  explanation: The GRES token requests one GPU, optionally typed as H200.
+- id: fb-002
+  type: fill_blank
+  competency: resource-allocation
+  prompt: 'Complete the option requesting 64 GiB: `srun ____ --pty bash`'
+  blanks:
+  - id: blank-1
+    accepted:
+    - --mem=64G
+    - --mem 64G
+    case_insensitive: false
+    trim: true
+    normalize_whitespace: true
+  points: 2
+  explanation: --mem declares memory for the job or step.
+- id: fb-003
+  type: fill_blank
+  competency: batch-jobs
+  prompt: 'Complete the submission command: `____ train.sbatch`'
+  blanks:
+  - id: blank-1
+    accepted:
+    - sbatch
+    case_insensitive: true
+    trim: true
+    normalize_whitespace: true
+  points: 2
+  explanation: sbatch submits a batch script.
+- id: fb-004
+  type: fill_blank
+  competency: accounting
+  prompt: 'Complete the command to inspect job 20418: `____ -j 20418`'
+  blanks:
+  - id: blank-1
+    accepted:
+    - sacct
+    case_insensitive: true
+    trim: true
+    normalize_whitespace: true
+  points: 2
+  explanation: sacct queries accounting.
+- id: fb-005
+  type: fill_blank
+  competency: scheduling
+  prompt: 'Complete the command showing job detail: `scontrol ____ job 12345`'
+  blanks:
+  - id: blank-1
+    accepted:
+    - show
+    case_insensitive: true
+    trim: true
+    normalize_whitespace: true
+  points: 2
+  explanation: scontrol show job presents detailed state and reason.
+- id: fb-006
+  type: fill_blank
+  competency: job-arrays
+  prompt: 'Complete the array directive: `#SBATCH ____=0-7`'
+  blanks:
+  - id: blank-1
+    accepted:
+    - --array
+    case_insensitive: false
+    trim: true
+    normalize_whitespace: true
+  points: 2
+  explanation: --array declares array indices.
+- id: fb-007
+  type: fill_blank
+  competency: dependencies
+  prompt: 'Complete the dependency token: `--dependency=____:12345`'
+  blanks:
+  - id: blank-1
+    accepted:
+    - afterok
+    case_insensitive: true
+    trim: true
+    normalize_whitespace: true
+  points: 2
+  explanation: afterok waits for successful completion.
+- id: fb-008
+  type: fill_blank
+  competency: gpu-isolation
+  prompt: 'Complete the variable name commonly inspected inside a GPU allocation: `$____`'
+  blanks:
+  - id: blank-1
+    accepted:
+    - CUDA_VISIBLE_DEVICES
+    case_insensitive: false
+    trim: true
+    normalize_whitespace: true
+  points: 2
+  explanation: CUDA_VISIBLE_DEVICES reflects visible CUDA device mapping.
+- id: fb-009
+  type: fill_blank
+  competency: checkpointing
+  prompt: 'Complete a typical resume argument: `python train.py ____ checkpoints/epoch-003.pt`'
+  blanks:
+  - id: blank-1
+    accepted:
+    - --resume
+    - --resume-from-checkpoint
+    case_insensitive: false
+    trim: true
+    normalize_whitespace: true
+  points: 2
+  explanation: The exact training CLI varies; accepted aliases are explicit in the question definition.
+- id: fb-010
+  type: fill_blank
+  competency: cancellation
+  prompt: 'Complete the cancellation command: `____ 12345`'
+  blanks:
+  - id: blank-1
+    accepted:
+    - scancel
+    case_insensitive: true
+    trim: true
+    normalize_whitespace: true
+  points: 2
+  explanation: scancel requests cancellation of the simulated job.

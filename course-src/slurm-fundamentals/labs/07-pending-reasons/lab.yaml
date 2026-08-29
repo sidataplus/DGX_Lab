@@ -1,0 +1,56 @@
+schema: dgxlab.lab/v1
+id: 07-pending-reasons
+revision: 1.0.0
+title: Queue Contention and Pending Reasons
+scenario: dgx-contended
+estimated_minutes: 35
+prerequisites:
+- 06-batch-jobs
+objectives:
+- id: 07-pending-reasons-objective-1
+  competency: scheduling
+  description: Submit a one-GPU job into a fully occupied cluster.
+- id: 07-pending-reasons-objective-2
+  competency: pending-reasons
+  description: Use `squeue` to observe PENDING.
+- id: 07-pending-reasons-objective-3
+  competency: pending-reasons
+  description: Use `scontrol show job` to distinguish Resources from Priority.
+- id: 07-pending-reasons-objective-4
+  competency: pending-reasons
+  description: Advance the clock until the job starts.
+steps:
+- id: step-1
+  instruction: Submit a one-GPU job into a fully occupied cluster.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: false
+- id: step-2
+  instruction: Use `squeue` to observe PENDING.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: false
+- id: step-3
+  instruction: Use `scontrol show job` to distinguish Resources from Priority.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: false
+- id: step-4
+  instruction: Advance the clock until the job starts.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: true
+hints:
+- level: 1
+  text: Inspect state before guessing.
+- level: 2
+  text: Use a read-only scheduler command that exposes the relevant object.
+- level: 3
+  text: Review the command reference card for this module.
+completion:
+  require_all_critical: true
+  minimum_points_percent: 80

@@ -1,0 +1,55 @@
+schema: dgxlab.scenario/v1
+id: dgx-degraded
+revision: 1.0.0
+title: DGX Degraded
+cluster_profile: dgx-h200-8
+learner:
+  username: learner
+  account: training
+  qos: normal
+initial_files:
+- path: /home/learner/train.sbatch
+  content: "#!/bin/bash\n#SBATCH --job-name=train-h200\n#SBATCH --partition=gpu\n\
+    #SBATCH --gres=gpu:h200:1\n#SBATCH --cpus-per-task=8\n#SBATCH --mem=64G\n#SBATCH\
+    \ --time=00:30:00\n#SBATCH --output=logs/%x-%j.out\n\nmodule load singularity/4.5.0\n\
+    srun singularity exec --nv /containers/pytorch-lab.sif \\\n  python train.py --batch-size\
+    \ 64 --epochs 5\n"
+- path: /home/learner/README.txt
+  content: 'This is a simulated filesystem. No commands execute on the host.
+
+    '
+actors:
+- id: ops
+  kind: infrastructure
+  username: operator
+  actions:
+  - at_ms: 0
+    gpu_warning:
+      node: dgx-h200-01
+      gpu_index: 2
+objectives:
+- id: diagnose-oom
+  competency: troubleshooting
+  description: Diagnose a failed training job and resume from a valid checkpoint.
+hints:
+- level: 1
+  text: Inspect the current scheduler state before changing anything.
+- level: 2
+  text: Use squeue and scontrol show job to connect queue state with its reason.
+checks:
+- id: sacct-used
+  critical: true
+  points: 2
+  assert:
+    command_used: sacct
+- id: checkpoint-selected
+  critical: true
+  points: 3
+  assert:
+    file_used: /home/learner/checkpoints/epoch-003.pt
+- id: resume-running
+  critical: true
+  points: 4
+  assert:
+    job_name: train-resume
+    state: running

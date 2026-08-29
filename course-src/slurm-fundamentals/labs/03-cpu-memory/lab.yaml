@@ -1,0 +1,47 @@
+schema: dgxlab.lab/v1
+id: 03-cpu-memory
+revision: 1.0.0
+title: CPU and Memory Requests
+scenario: dgx-h200-8
+estimated_minutes: 30
+prerequisites:
+- 02-interactive-cpu
+objectives:
+- id: 03-cpu-memory-objective-1
+  competency: resource-allocation
+  description: Submit a CPU preprocessing job.
+- id: 03-cpu-memory-objective-2
+  competency: cgroup-isolation
+  description: Compare requested and observed memory.
+- id: 03-cpu-memory-objective-3
+  competency: cgroup-isolation
+  description: Trigger a simulated host-memory OOM and diagnose it.
+steps:
+- id: step-1
+  instruction: Submit a CPU preprocessing job.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: false
+- id: step-2
+  instruction: Compare requested and observed memory.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: false
+- id: step-3
+  instruction: Trigger a simulated host-memory OOM and diagnose it.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: true
+hints:
+- level: 1
+  text: Inspect state before guessing.
+- level: 2
+  text: Use a read-only scheduler command that exposes the relevant object.
+- level: 3
+  text: Review the command reference card for this module.
+completion:
+  require_all_critical: true
+  minimum_points_percent: 80

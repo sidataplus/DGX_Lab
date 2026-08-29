@@ -1,0 +1,94 @@
+schema: dgxlab.course/v1
+id: slurm-fundamentals
+revision: 1.0.0
+title: 'DGX Lab: SLURM Fundamentals and GPU Training'
+language: en
+description: Twelve guided modules from scheduler fundamentals to robust checkpointed
+  multi-GPU workflows.
+modules:
+- id: 01-cluster-mental-model
+  title: Cluster, Nodes, Partitions, Jobs, and Steps
+  lab_path: labs/01-cluster-mental-model/lab.yaml
+  competencies:
+  - cluster-fundamentals
+  estimated_minutes: 25
+- id: 02-interactive-cpu
+  title: Interactive CPU Allocation
+  lab_path: labs/02-interactive-cpu/lab.yaml
+  competencies:
+  - interactive-jobs
+  - resource-allocation
+  estimated_minutes: 25
+- id: 03-cpu-memory
+  title: CPU and Memory Requests
+  lab_path: labs/03-cpu-memory/lab.yaml
+  competencies:
+  - resource-allocation
+  - cgroup-isolation
+  estimated_minutes: 30
+- id: 04-one-gpu
+  title: One GPU Allocation and Isolation
+  lab_path: labs/04-one-gpu/lab.yaml
+  competencies:
+  - gpu-allocation
+  - gpu-isolation
+  estimated_minutes: 30
+- id: 05-containers
+  title: Reproducible Container Workloads
+  lab_path: labs/05-containers/lab.yaml
+  competencies:
+  - containers
+  - gpu-isolation
+  estimated_minutes: 35
+- id: 06-batch-jobs
+  title: From Interactive Command to Batch Job
+  lab_path: labs/06-batch-jobs/lab.yaml
+  competencies:
+  - batch-jobs
+  - logs
+  estimated_minutes: 35
+- id: 07-pending-reasons
+  title: Queue Contention and Pending Reasons
+  lab_path: labs/07-pending-reasons/lab.yaml
+  competencies:
+  - scheduling
+  - pending-reasons
+  estimated_minutes: 35
+- id: 08-arrays-dependencies
+  title: Arrays and Dependencies
+  lab_path: labs/08-arrays-dependencies/lab.yaml
+  competencies:
+  - job-arrays
+  - dependencies
+  estimated_minutes: 40
+- id: 09-failure-resume
+  title: Diagnose Failure and Resume
+  lab_path: labs/09-failure-resume/lab.yaml
+  competencies:
+  - troubleshooting
+  - checkpointing
+  estimated_minutes: 45
+- id: 10-multi-gpu
+  title: Multi-GPU Training
+  lab_path: labs/10-multi-gpu/lab.yaml
+  competencies:
+  - distributed-training
+  - gpu-topology
+  estimated_minutes: 45
+- id: 11-policy-efficiency
+  title: QOS, Reservations, and Efficiency
+  lab_path: labs/11-policy-efficiency/lab.yaml
+  competencies:
+  - qos
+  - reservations
+  - efficiency
+  estimated_minutes: 40
+- id: 12-capstone
+  title: 'Capstone: Robust Training Campaign'
+  lab_path: labs/12-capstone/lab.yaml
+  competencies:
+  - batch-jobs
+  - troubleshooting
+  - checkpointing
+  - accounting
+  estimated_minutes: 60

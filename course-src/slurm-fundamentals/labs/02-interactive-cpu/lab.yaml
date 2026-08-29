@@ -1,0 +1,47 @@
+schema: dgxlab.lab/v1
+id: 02-interactive-cpu
+revision: 1.0.0
+title: Interactive CPU Allocation
+scenario: dgx-h200-8
+estimated_minutes: 25
+prerequisites:
+- 01-cluster-mental-model
+objectives:
+- id: 02-interactive-cpu-objective-1
+  competency: interactive-jobs
+  description: Request an interactive allocation with 4 CPUs and 8 GiB memory.
+- id: 02-interactive-cpu-objective-2
+  competency: resource-allocation
+  description: Inspect `SLURM_JOB_ID` and `SLURM_CPUS_PER_TASK`.
+- id: 02-interactive-cpu-objective-3
+  competency: resource-allocation
+  description: Exit cleanly and verify the job appears in accounting.
+steps:
+- id: step-1
+  instruction: Request an interactive allocation with 4 CPUs and 8 GiB memory.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: false
+- id: step-2
+  instruction: Inspect `SLURM_JOB_ID` and `SLURM_CPUS_PER_TASK`.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: false
+- id: step-3
+  instruction: Exit cleanly and verify the job appears in accounting.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: true
+hints:
+- level: 1
+  text: Inspect state before guessing.
+- level: 2
+  text: Use a read-only scheduler command that exposes the relevant object.
+- level: 3
+  text: Review the command reference card for this module.
+completion:
+  require_all_critical: true
+  minimum_points_percent: 80

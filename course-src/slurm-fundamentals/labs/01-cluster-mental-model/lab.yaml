@@ -1,0 +1,48 @@
+schema: dgxlab.lab/v1
+id: 01-cluster-mental-model
+revision: 1.0.0
+title: Cluster, Nodes, Partitions, Jobs, and Steps
+scenario: dgx-h200-8
+estimated_minutes: 25
+prerequisites: []
+objectives:
+- id: 01-cluster-mental-model-objective-1
+  competency: cluster-fundamentals
+  description: Run `sinfo` and identify the default partition and node state.
+- id: 01-cluster-mental-model-objective-2
+  competency: cluster-fundamentals
+  description: Run `scontrol show node dgx-h200-01` and locate CPU, memory, and GPU
+    capacity.
+- id: 01-cluster-mental-model-objective-3
+  competency: cluster-fundamentals
+  description: Explain the distinction between a job allocation and a job step.
+steps:
+- id: step-1
+  instruction: Run `sinfo` and identify the default partition and node state.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: false
+- id: step-2
+  instruction: Run `scontrol show node dgx-h200-01` and locate CPU, memory, and GPU
+    capacity.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: false
+- id: step-3
+  instruction: Explain the distinction between a job allocation and a job step.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: true
+hints:
+- level: 1
+  text: Inspect state before guessing.
+- level: 2
+  text: Use a read-only scheduler command that exposes the relevant object.
+- level: 3
+  text: Review the command reference card for this module.
+completion:
+  require_all_critical: true
+  minimum_points_percent: 80

@@ -1,0 +1,41 @@
+schema: dgxlab.scenario/v1
+id: dgx-multinode
+revision: 1.0.0
+title: DGX Multi-Node Fictional Profile
+cluster_profile: dgx-multinode
+learner:
+  username: learner
+  account: training
+  qos: normal
+initial_files:
+- path: /home/learner/train.sbatch
+  content: "#!/bin/bash\n#SBATCH --job-name=train-h200\n#SBATCH --partition=gpu\n\
+    #SBATCH --gres=gpu:h200:1\n#SBATCH --cpus-per-task=8\n#SBATCH --mem=64G\n#SBATCH\
+    \ --time=00:30:00\n#SBATCH --output=logs/%x-%j.out\n\nmodule load singularity/4.5.0\n\
+    srun singularity exec --nv /containers/pytorch-lab.sif \\\n  python train.py --batch-size\
+    \ 64 --epochs 5\n"
+- path: /home/learner/README.txt
+  content: 'This is a simulated filesystem. No commands execute on the host.
+
+    '
+actors:
+- id: multinode-load
+  kind: scripted
+  username: researcher
+  actions: []
+objectives:
+- id: distributed-allocation
+  competency: distributed-training
+  description: Request a multi-node allocation and interpret rank placement.
+hints:
+- level: 1
+  text: Inspect the current scheduler state before changing anything.
+- level: 2
+  text: Use squeue and scontrol show job to connect queue state with its reason.
+checks:
+- id: nodes-requested
+  critical: true
+  points: 4
+  assert:
+    job_requested:
+      nodes: 2

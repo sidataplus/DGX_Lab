@@ -1,0 +1,42 @@
+schema: dgxlab.certification-blueprint/v1
+id: dgxlab-slurm-operator-v1
+revision: 1.0.0
+title: DGX Lab SLURM Operator Certificate
+weights:
+  practical: 60
+  multiple_choice: 25
+  fill_blank: 15
+pass_policy:
+  overall_percent: 80
+  knowledge_percent: 70
+  require_all_critical_practical: true
+  attempt_limit: 2
+sections:
+- id: fundamentals
+  competencies:
+  - cluster-fundamentals
+  - interactive-jobs
+  - batch-jobs
+  question_count: 6
+  practical_scenario: guided-one-gpu
+- id: resources
+  competencies:
+  - resource-allocation
+  - gpu-allocation
+  - gpu-isolation
+  question_count: 6
+  practical_scenario: dgx-contended
+- id: operations
+  competencies:
+  - scheduling
+  - accounting
+  - containers
+  - checkpointing
+  question_count: 8
+  practical_scenario: dgx-degraded
+- id: best-practices
+  competencies:
+  - efficiency
+  - security
+  question_count: 4
+  practical_scenario: null

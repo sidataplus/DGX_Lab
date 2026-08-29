@@ -1,0 +1,56 @@
+schema: dgxlab.lab/v1
+id: 11-policy-efficiency
+revision: 1.0.0
+title: QOS, Reservations, and Efficiency
+scenario: dgx-shared
+estimated_minutes: 40
+prerequisites:
+- 10-multi-gpu
+objectives:
+- id: 11-policy-efficiency-objective-1
+  competency: qos
+  description: Interpret a QOS per-user limit.
+- id: 11-policy-efficiency-objective-2
+  competency: reservations
+  description: Inspect a reservation-constrained job.
+- id: 11-policy-efficiency-objective-3
+  competency: efficiency
+  description: Right-size CPU and memory from accounting evidence.
+- id: 11-policy-efficiency-objective-4
+  competency: efficiency
+  description: Explain why using every available GPU is not automatically efficient.
+steps:
+- id: step-1
+  instruction: Interpret a QOS per-user limit.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: false
+- id: step-2
+  instruction: Inspect a reservation-constrained job.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: false
+- id: step-3
+  instruction: Right-size CPU and memory from accounting evidence.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: false
+- id: step-4
+  instruction: Explain why using every available GPU is not automatically efficient.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: true
+hints:
+- level: 1
+  text: Inspect state before guessing.
+- level: 2
+  text: Use a read-only scheduler command that exposes the relevant object.
+- level: 3
+  text: Review the command reference card for this module.
+completion:
+  require_all_critical: true
+  minimum_points_percent: 80

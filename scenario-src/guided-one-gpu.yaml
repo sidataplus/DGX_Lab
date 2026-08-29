@@ -1,0 +1,50 @@
+schema: dgxlab.scenario/v1
+id: guided-one-gpu
+revision: 1.0.0
+title: One GPU Allocation
+cluster_profile: dgx-h200-8
+learner:
+  username: learner
+  account: training
+  qos: normal
+initial_files:
+- path: /home/learner/train.sbatch
+  content: "#!/bin/bash\n#SBATCH --job-name=train-h200\n#SBATCH --partition=gpu\n\
+    #SBATCH --gres=gpu:h200:1\n#SBATCH --cpus-per-task=8\n#SBATCH --mem=64G\n#SBATCH\
+    \ --time=00:30:00\n#SBATCH --output=logs/%x-%j.out\n\nmodule load singularity/4.5.0\n\
+    srun singularity exec --nv /containers/pytorch-lab.sif \\\n  python train.py --batch-size\
+    \ 64 --epochs 5\n"
+- path: /home/learner/README.txt
+  content: 'This is a simulated filesystem. No commands execute on the host.
+
+    '
+actors: []
+objectives:
+- id: request-gpu
+  competency: resource-allocation
+  description: Request one H200 GPU with an interactive allocation.
+- id: verify-isolation
+  competency: gpu-isolation
+  description: Verify the allocation exposes only one GPU.
+hints:
+- level: 1
+  text: Inspect the current scheduler state before changing anything.
+- level: 2
+  text: Use squeue and scontrol show job to connect queue state with its reason.
+checks:
+- id: one-gpu-requested
+  critical: true
+  points: 3
+  assert:
+    job_requested:
+      gpus: 1
+- id: nvidia-smi-used
+  critical: true
+  points: 2
+  assert:
+    command_used: nvidia-smi -L
+- id: allocation-released
+  critical: true
+  points: 2
+  assert:
+    interactive_allocation_released: true

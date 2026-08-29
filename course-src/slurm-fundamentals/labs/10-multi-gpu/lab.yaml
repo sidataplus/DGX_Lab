@@ -1,0 +1,56 @@
+schema: dgxlab.lab/v1
+id: 10-multi-gpu
+revision: 1.0.0
+title: Multi-GPU Training
+scenario: dgx-h200-8
+estimated_minutes: 45
+prerequisites:
+- 09-failure-resume
+objectives:
+- id: 10-multi-gpu-objective-1
+  competency: distributed-training
+  description: Request four H200 GPUs.
+- id: 10-multi-gpu-objective-2
+  competency: gpu-topology
+  description: Launch a synthetic `torchrun` workload.
+- id: 10-multi-gpu-objective-3
+  competency: gpu-topology
+  description: Inspect rank-to-GPU placement.
+- id: 10-multi-gpu-objective-4
+  competency: gpu-topology
+  description: Compare single- and four-GPU throughput without claiming perfect scaling.
+steps:
+- id: step-1
+  instruction: Request four H200 GPUs.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: false
+- id: step-2
+  instruction: Launch a synthetic `torchrun` workload.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: false
+- id: step-3
+  instruction: Inspect rank-to-GPU placement.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: false
+- id: step-4
+  instruction: Compare single- and four-GPU throughput without claiming perfect scaling.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: true
+hints:
+- level: 1
+  text: Inspect state before guessing.
+- level: 2
+  text: Use a read-only scheduler command that exposes the relevant object.
+- level: 3
+  text: Review the command reference card for this module.
+completion:
+  require_all_critical: true
+  minimum_points_percent: 80

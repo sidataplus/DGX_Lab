@@ -1,0 +1,56 @@
+schema: dgxlab.lab/v1
+id: 06-batch-jobs
+revision: 1.0.0
+title: From Interactive Command to Batch Job
+scenario: dgx-h200-8
+estimated_minutes: 35
+prerequisites:
+- 05-containers
+objectives:
+- id: 06-batch-jobs-objective-1
+  competency: batch-jobs
+  description: Edit `train.sbatch` with resource directives.
+- id: 06-batch-jobs-objective-2
+  competency: logs
+  description: Validate and submit the script.
+- id: 06-batch-jobs-objective-3
+  competency: logs
+  description: Inspect output and error paths.
+- id: 06-batch-jobs-objective-4
+  competency: logs
+  description: Use `sacct` after completion.
+steps:
+- id: step-1
+  instruction: Edit `train.sbatch` with resource directives.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: false
+- id: step-2
+  instruction: Validate and submit the script.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: false
+- id: step-3
+  instruction: Inspect output and error paths.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: false
+- id: step-4
+  instruction: Use `sacct` after completion.
+  evidence:
+  - command transcript
+  - resulting simulator state
+  critical: true
+hints:
+- level: 1
+  text: Inspect state before guessing.
+- level: 2
+  text: Use a read-only scheduler command that exposes the relevant object.
+- level: 3
+  text: Review the command reference card for this module.
+completion:
+  require_all_critical: true
+  minimum_points_percent: 80
