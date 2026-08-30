@@ -1,0 +1,40 @@
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+body > .app-shell {
+  order: 1;
+  flex: 1 0 auto;
+}
+
+.public-release-footer {
+  order: 2;
+  width: 100%;
+  padding: 1rem max(1rem, calc((100vw - 90rem) / 2 + 1.5rem)) 1.5rem;
+  border-top: 1px solid #294143;
+  background: #071214;
+  color: #a8bab4;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.public-release-footer p {
+  max-width: 72rem;
+  margin: 0.2rem auto;
+}
+
+.public-release-footer strong {
+  color: #eef7f3;
+}
+
+body:has(> .app-shell.theme-light) > .public-release-footer {
+  border-top-color: #c5d2cc;
+  background: #f1eee6;
+  color: #556862;
+}
+
+body:has(> .app-shell.theme-light) > .public-release-footer strong {
+  color: #182521;
+}
