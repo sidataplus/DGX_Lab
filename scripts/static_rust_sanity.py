@@ -42,7 +42,8 @@ def check(path: Path):
             if not stack or stack[-1][0]!=pairs[ch]: return f"unmatched {ch} near offset {idx}"
             stack.pop()
     if stack: return f"unclosed delimiter {stack[-1][0]} near offset {stack[-1][1]}"
-    if "#![forbid(unsafe_code)]" not in path.read_text(encoding="utf-8") and path.name not in {"build.rs","main.rs"}:
+    # Inner crate attributes belong at crate roots and govern their child modules.
+    if path.name == "lib.rs" and "#![forbid(unsafe_code)]" not in path.read_text(encoding="utf-8"):
         return "missing #![forbid(unsafe_code)]"
     return None
 

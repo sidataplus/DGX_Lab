@@ -20,29 +20,20 @@ objectives:
   competency: gpu-topology
   description: Compare single- and four-GPU throughput without claiming perfect scaling.
 steps:
-- id: step-1
-  instruction: Request four H200 GPUs.
+- id: step-0
+  instruction: Request a multi-GPU allocation
   evidence:
-  - command transcript
-  - resulting simulator state
+  - Four GPU tiles should become owned by one learner job.
+  critical: false
+- id: step-1
+  instruction: Verify four visible GPUs
+  evidence:
+  - Confirm the allocation exposes four locally remapped GPU devices.
   critical: false
 - id: step-2
-  instruction: Launch a synthetic `torchrun` workload.
+  instruction: Launch the synthetic distributed workload
   evidence:
-  - command transcript
-  - resulting simulator state
-  critical: false
-- id: step-3
-  instruction: Inspect rank-to-GPU placement.
-  evidence:
-  - command transcript
-  - resulting simulator state
-  critical: false
-- id: step-4
-  instruction: Compare single- and four-GPU throughput without claiming perfect scaling.
-  evidence:
-  - command transcript
-  - resulting simulator state
+  - The simulator should accept the launch without creating host processes.
   critical: true
 hints:
 - level: 1

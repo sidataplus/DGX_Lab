@@ -12,41 +12,60 @@ pub fn lab06_checks() -> Vec<PracticalCheck> {
             id: "edit-script".into(),
             points: 20,
             critical: false,
-            assertion: Assertion::VirtualFileExists {
-                path: "/home/learner/train.sbatch".into(),
-            },
+            assertion: Assertion::VirtualFileWritten { path: "/home/learner/train.sbatch".into() },
         },
         PracticalCheck {
             id: "submit-batch".into(),
             points: 30,
             critical: false,
-            assertion: Assertion::AnyCommandUsed {
-                prefixes: vec!["sbatch".into()],
+            assertion: Assertion::LearnerJobMatches {
+                name: None,
+                gpus: None,
+                cpus: None,
+                min_memory_mib: None,
+                max_memory_mib: None,
+                states: vec![JobStatus::Submitted],
+            },
+        },
+        PracticalCheck {
+            id: "job-progress".into(),
+            points: 0,
+            critical: true,
+            assertion: Assertion::LearnerJobMatches {
+                name: None,
+                gpus: None,
+                cpus: None,
+                min_memory_mib: None,
+                max_memory_mib: None,
+                states: vec![JobStatus::Completed],
             },
         },
         PracticalCheck {
             id: "inspect-logs".into(),
             points: 20,
-            critical: false,
-            assertion: Assertion::AnyCommandUsed {
-                prefixes: vec!["cat".into(), "tail".into(), "ls".into()],
+            critical: true,
+            assertion: Assertion::CommandAfterMatchingJobState {
+                prefixes: vec!["tail -n".into()],
+                name: None,
+                gpus: None,
+                cpus: None,
+                min_memory_mib: None,
+                max_memory_mib: None,
+                state: JobStatus::Completed,
             },
         },
         PracticalCheck {
             id: "accounting".into(),
             points: 30,
             critical: true,
-            assertion: Assertion::AnyCommandUsed {
+            assertion: Assertion::CommandAfterMatchingJobState {
                 prefixes: vec!["sacct".into()],
-            },
-        },
-        // Bonus signal: batch job reached a terminal or running state.
-        PracticalCheck {
-            id: "job-progress".into(),
-            points: 0,
-            critical: false,
-            assertion: Assertion::LearnerJobVisitedState {
-                state: JobStatus::Running,
+                name: None,
+                gpus: None,
+                cpus: None,
+                min_memory_mib: None,
+                max_memory_mib: None,
+                state: JobStatus::Completed,
             },
         },
     ]
@@ -59,4 +78,27 @@ pub fn lab06_hints() -> [&'static str; 3] {
         "Submit with `sbatch train.sbatch`, then watch the queue.",
         "After the job finishes (advance time if needed), inspect logs and run `sacct`.",
     ]
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn seeded_script_and_early_observation_cannot_finish_the_lab() {
+        let checks = lab06_checks();
+        assert!(matches!(
+            &checks[0].assertion,
+            Assertion::VirtualFileWritten { path } if path == "/home/learner/train.sbatch"
+        ));
+        assert!(checks[3].critical);
+        assert!(matches!(
+            &checks[3].assertion,
+            Assertion::CommandAfterMatchingJobState { state: JobStatus::Completed, .. }
+        ));
+        assert!(matches!(
+            &checks[4].assertion,
+            Assertion::CommandAfterMatchingJobState { state: JobStatus::Completed, .. }
+        ));
+    }
 }

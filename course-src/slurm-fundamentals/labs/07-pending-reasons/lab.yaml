@@ -20,29 +20,25 @@ objectives:
   competency: pending-reasons
   description: Advance the clock until the job starts.
 steps:
-- id: step-1
-  instruction: Submit a one-GPU job into a fully occupied cluster.
+- id: submit
+  instruction: Submit a one-GPU job under contention
   evidence:
-  - command transcript
-  - resulting simulator state
+  - Your job should enter the queue even when no GPU is immediately free.
   critical: false
-- id: step-2
-  instruction: Use `squeue` to observe PENDING.
+- id: observe-pending
+  instruction: Observe the pending state
   evidence:
-  - command transcript
-  - resulting simulator state
+  - Identify your job and read its current scheduler reason.
   critical: false
-- id: step-3
-  instruction: Use `scontrol show job` to distinguish Resources from Priority.
+- id: inspect-reason
+  instruction: Explain why the job is waiting
   evidence:
-  - command transcript
-  - resulting simulator state
+  - Compare the pending explanation with currently allocated GPU tiles.
   critical: false
-- id: step-4
-  instruction: Advance the clock until the job starts.
+- id: start-after-wait
+  instruction: Advance time until resources release
   evidence:
-  - command transcript
-  - resulting simulator state
+  - The learner job should transition from pending to running without resubmission.
   critical: true
 hints:
 - level: 1

@@ -20,29 +20,25 @@ objectives:
   competency: dependencies
   description: Observe dependency release after the array completes.
 steps:
-- id: step-1
-  instruction: Submit a four-task parameter sweep.
+- id: step-0
+  instruction: Submit the edited four-task array
   evidence:
-  - command transcript
-  - resulting simulator state
+  - Look for the expanded learner tasks created from one script.
+  critical: false
+- id: step-1
+  instruction: Inspect task states in the queue
+  evidence:
+  - Distinguish independently scheduled tasks from the parent submission.
   critical: false
 - id: step-2
-  instruction: Inspect array element states.
+  instruction: Submit the edited evaluation dependency
   evidence:
-  - command transcript
-  - resulting simulator state
+  - After replacing the array with an `afterok` dependency, confirm the submitted job retains that prerequisite.
   critical: false
 - id: step-3
-  instruction: Submit an evaluation job with `afterok` dependency.
+  instruction: Observe the evaluation dependency release
   evidence:
-  - command transcript
-  - resulting simulator state
-  critical: false
-- id: step-4
-  instruction: Observe dependency release after the array completes.
-  evidence:
-  - command transcript
-  - resulting simulator state
+  - Advance in bounded steps until the named `evaluate` job becomes eligible and starts or completes.
   critical: true
 hints:
 - level: 1

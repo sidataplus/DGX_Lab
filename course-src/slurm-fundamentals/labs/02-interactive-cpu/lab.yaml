@@ -17,23 +17,25 @@ objectives:
   competency: resource-allocation
   description: Exit cleanly and verify the job appears in accounting.
 steps:
-- id: step-1
-  instruction: Request an interactive allocation with 4 CPUs and 8 GiB memory.
+- id: step-0
+  instruction: Request a small interactive allocation
   evidence:
-  - command transcript
-  - resulting simulator state
+  - The prompt and job queue should show that work moved into an allocation.
+  critical: false
+- id: step-1
+  instruction: Inspect the allocation environment
+  evidence:
+  - Match `SLURM_JOB_ID` and `SLURM_CPUS_PER_TASK=4` to this running allocation.
   critical: false
 - id: step-2
-  instruction: Inspect `SLURM_JOB_ID` and `SLURM_CPUS_PER_TASK`.
+  instruction: Release the allocation cleanly
   evidence:
-  - command transcript
-  - resulting simulator state
+  - The learner job should leave the running state and release its resources.
   critical: false
 - id: step-3
-  instruction: Exit cleanly and verify the job appears in accounting.
+  instruction: Verify the completed allocation
   evidence:
-  - command transcript
-  - resulting simulator state
+  - Find the released allocation in accounting with a completed terminal state.
   critical: true
 hints:
 - level: 1

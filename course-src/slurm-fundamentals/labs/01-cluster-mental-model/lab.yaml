@@ -17,24 +17,15 @@ objectives:
   competency: cluster-fundamentals
   description: Explain the distinction between a job allocation and a job step.
 steps:
+- id: step-0
+  instruction: Inspect partitions and node state
+  evidence:
+  - Find the default partition and distinguish idle from allocated capacity.
+  critical: false
 - id: step-1
-  instruction: Run `sinfo` and identify the default partition and node state.
+  instruction: Inspect the node's resource capacity
   evidence:
-  - command transcript
-  - resulting simulator state
-  critical: false
-- id: step-2
-  instruction: Run `scontrol show node dgx-h200-01` and locate CPU, memory, and GPU
-    capacity.
-  evidence:
-  - command transcript
-  - resulting simulator state
-  critical: false
-- id: step-3
-  instruction: Explain the distinction between a job allocation and a job step.
-  evidence:
-  - command transcript
-  - resulting simulator state
+  - Locate total and allocated CPU, memory, and GPU capacity in one node record.
   critical: true
 hints:
 - level: 1

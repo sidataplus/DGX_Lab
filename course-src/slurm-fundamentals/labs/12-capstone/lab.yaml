@@ -20,29 +20,35 @@ objectives:
   competency: accounting
   description: Produce an accounting and efficiency summary.
 steps:
-- id: step-1
-  instruction: Turn an interactive prototype into a batch script.
+- id: step-0
+  instruction: Submit a robust training script
   evidence:
-  - command transcript
-  - resulting simulator state
+  - Follow the script's named `train-h200` baseline through `COMPLETED` before injecting a separate failure.
+  critical: true
+- id: step-1
+  instruction: Monitor and explain its queue state
+  evidence:
+  - Use contention and state transitions to decide when intervention is unnecessary.
   critical: false
 - id: step-2
-  instruction: Submit under contention and diagnose its wait.
+  instruction: Launch the controlled failure attempt
   evidence:
-  - command transcript
-  - resulting simulator state
+  - The intentionally constrained request should create a separate learner job for diagnosis.
   critical: false
 - id: step-3
-  instruction: Recover from an injected failure using a checkpoint.
+  instruction: Observe the out-of-memory failure
   evidence:
-  - command transcript
-  - resulting simulator state
+  - Wait for the controlled attempt to reach an out-of-memory terminal state before correcting it.
   critical: true
 - id: step-4
-  instruction: Produce an accounting and efficiency summary.
+  instruction: Complete the corrected recovery
   evidence:
-  - command transcript
-  - resulting simulator state
+  - Complete a 1-GPU, 8-CPU, 64-GiB, 30-minute recovery after the controlled failure using the latest readable checkpoint.
+  critical: true
+- id: step-5
+  instruction: Produce final accounting evidence
+  evidence:
+  - Summarize original, failure, and recovery terminal states with elapsed time.
   critical: true
 hints:
 - level: 1

@@ -17,23 +17,25 @@ objectives:
   competency: cgroup-isolation
   description: Trigger a simulated host-memory OOM and diagnose it.
 steps:
-- id: step-1
-  instruction: Submit a CPU preprocessing job.
+- id: step-0
+  instruction: Run a safe CPU preprocessing baseline
   evidence:
-  - command transcript
-  - resulting simulator state
+  - Capture a baseline request with enough host memory to complete.
+  critical: false
+- id: step-1
+  instruction: Inspect the recorded resource request
+  evidence:
+  - Compare the recorded CPU and memory request with the intended baseline.
   critical: false
 - id: step-2
-  instruction: Compare requested and observed memory.
+  instruction: Submit a low-memory comparison job
   evidence:
-  - command transcript
-  - resulting simulator state
+  - A second learner job should record the intentionally constrained memory request.
   critical: false
 - id: step-3
-  instruction: Trigger a simulated host-memory OOM and diagnose it.
+  instruction: Observe and classify the host-memory OOM
   evidence:
-  - command transcript
-  - resulting simulator state
+  - After time advances, accounting should show an out-of-memory terminal state.
   critical: true
 hints:
 - level: 1

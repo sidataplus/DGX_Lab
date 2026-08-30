@@ -20,29 +20,30 @@ objectives:
   competency: gpu-isolation
   description: Release the allocation.
 steps:
-- id: step-1
-  instruction: Inspect idle GPU capacity.
+- id: inspect
+  instruction: Inspect idle GPU capacity
   evidence:
-  - command transcript
-  - resulting simulator state
+  - Confirm the compute node is available before asking the scheduler for a GPU.
   critical: false
-- id: step-2
-  instruction: Request one H200 GPU, 8 CPUs, and 64 GiB memory.
+- id: allocate
+  instruction: Request one GPU, 8 CPUs, and 64 GiB
   evidence:
-  - command transcript
-  - resulting simulator state
+  - A learner job should run with exactly one allocated GPU tile.
   critical: false
-- id: step-3
-  instruction: Verify `CUDA_VISIBLE_DEVICES` and `nvidia-smi -L`.
+- id: verify-env
+  instruction: Verify the job environment
   evidence:
-  - command transcript
-  - resulting simulator state
+  - The environment should expose one locally remapped GPU index.
   critical: true
-- id: step-4
-  instruction: Release the allocation.
+- id: verify-gpu
+  instruction: Verify visible GPU hardware
   evidence:
-  - command transcript
-  - resulting simulator state
+  - Only the allocated simulated GPU should be visible inside the job.
+  critical: true
+- id: release
+  instruction: Release the allocation
+  evidence:
+  - The job should complete and the GPU tile should return to idle.
   critical: true
 hints:
 - level: 1

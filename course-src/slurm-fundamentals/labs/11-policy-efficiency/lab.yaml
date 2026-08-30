@@ -20,29 +20,20 @@ objectives:
   competency: efficiency
   description: Explain why using every available GPU is not automatically efficient.
 steps:
-- id: step-1
-  instruction: Interpret a QOS per-user limit.
+- id: step-0
+  instruction: Inspect shared-cluster queue pressure
   evidence:
-  - command transcript
-  - resulting simulator state
+  - Find the prepared learner job waiting on the per-user QOS limit.
+  critical: false
+- id: step-1
+  instruction: Inspect the QOS-limited job
+  evidence:
+  - Connect its typed pending reason to the configured concurrent-job limit.
   critical: false
 - id: step-2
-  instruction: Inspect a reservation-constrained job.
+  instruction: Review accounting before right-sizing
   evidence:
-  - command transcript
-  - resulting simulator state
-  critical: false
-- id: step-3
-  instruction: Right-size CPU and memory from accounting evidence.
-  evidence:
-  - command transcript
-  - resulting simulator state
-  critical: false
-- id: step-4
-  instruction: Explain why using every available GPU is not automatically efficient.
-  evidence:
-  - command transcript
-  - resulting simulator state
+  - Use completed-job resource and elapsed-time evidence instead of guessing.
   critical: true
 hints:
 - level: 1

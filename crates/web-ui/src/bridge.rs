@@ -9,28 +9,11 @@ use sim_session::SimSession;
 #[derive(Clone, Debug)]
 pub struct SimBridge {
     session: SimSession,
-    connected: bool,
 }
 
 impl SimBridge {
-    pub fn connect(scenario_id: &str, seed: u64) -> Result<Self, String> {
-        let session = SimSession::new(scenario_id, seed).map_err(|error| error.to_string())?;
-        Ok(Self {
-            session,
-            connected: true,
-        })
-    }
-
     pub fn from_session(session: SimSession) -> Self {
-        Self {
-            session,
-            connected: true,
-        }
-    }
-
-    #[must_use]
-    pub fn is_connected(&self) -> bool {
-        self.connected
+        Self { session }
     }
 
     pub fn handle(&mut self, request: SimRequest) -> SimResponse {
@@ -44,6 +27,11 @@ impl SimBridge {
 
     pub fn export_json(&self) -> Result<String, String> {
         self.session.export_json().map_err(|error| error.to_string())
+    }
+
+    #[must_use]
+    pub fn critical_practical_passed(&self) -> bool {
+        self.session.critical_practical_passed()
     }
 }
 

@@ -5,6 +5,7 @@
 
 mod app;
 mod bridge;
+mod learning;
 mod persist;
 
 use wasm_bindgen::prelude::*;

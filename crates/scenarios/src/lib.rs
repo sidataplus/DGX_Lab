@@ -77,6 +77,7 @@ pub fn initialize_scenario(id: &str, seed: u64) -> Result<SimulationWorld, Scena
         "dgx-h200-8" | "guided-one-gpu" => Ok(SimulationWorld::dgx_h200_8(seed)),
         "dgx-contended" | "pending-gpu-contention-01" => contended(seed),
         "dgx-degraded" | "failure-resume-01" => degraded(seed),
+        "dgx-shared" => shared(seed),
         other => Err(ScenarioError::UnknownScenario(other.into())),
     }
 }
@@ -102,12 +103,7 @@ fn degraded(seed: u64) -> Result<SimulationWorld, ScenarioError> {
     })?;
     let failed = JobSpec {
         name: "train-llm".into(),
-        resources: Tres {
-            cpus: 16,
-            memory_mib: 32 * 1024,
-            gpu_type: Some("h200".into()),
-            gpus: 4,
-        },
+        resources: Tres { cpus: 16, memory_mib: 32 * 1024, gpu_type: Some("h200".into()), gpus: 4 },
         command: "python train.py --batch-size 64 --epochs 5".into(),
         workload_id: "checkpoint-resume-v1".into(),
         time_limit_ms: 2 * 60 * 60 * 1_000,
@@ -118,13 +114,32 @@ fn degraded(seed: u64) -> Result<SimulationWorld, ScenarioError> {
     Ok(world)
 }
 
-fn background_job(
-    name: &str,
-    user: &str,
-    gpus: u16,
-    memory_gib: u64,
-    epochs: u32,
-) -> JobSpec {
+fn shared(seed: u64) -> Result<SimulationWorld, ScenarioError> {
+    let mut world = SimulationWorld::dgx_h200_8(seed);
+    world.scenario_id = "dgx-shared".into();
+    world.apply_actor_action(ActorAction::SubmitJob {
+        spec: Box::new(background_job("learner-history", "learner", 1, 96, 2)),
+    })?;
+    world.advance_to(SimTimeMs(60_000))?;
+
+    let normal = world
+        .cluster
+        .qos
+        .get_mut("normal")
+        .expect("the built-in DGX profile defines the normal QOS");
+    normal.max_running_jobs_per_user = Some(1);
+    normal.max_gpus_per_user = Some(4);
+
+    world.apply_actor_action(ActorAction::SubmitJob {
+        spec: Box::new(background_job("learner-baseline", "learner", 1, 64, 4)),
+    })?;
+    world.apply_actor_action(ActorAction::SubmitJob {
+        spec: Box::new(background_job("learner-followup", "learner", 1, 64, 4)),
+    })?;
+    Ok(world)
+}
+
+fn background_job(name: &str, user: &str, gpus: u16, memory_gib: u64, epochs: u32) -> JobSpec {
     JobSpec {
         name: name.into(),
         user: user.into(),
@@ -152,7 +167,7 @@ pub enum ScenarioError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use slurm_model::{GpuHealth, JobStatus};
+    use slurm_model::{GpuHealth, JobStatus, PendingReason};
 
     #[test]
     fn contended_profile_occupies_all_gpus() {
@@ -166,5 +181,25 @@ mod tests {
         let world = initialize_scenario("dgx-degraded", 1).unwrap();
         assert_eq!(world.cluster.nodes["dgx-h200-01"].gpus[2].health, GpuHealth::Warning);
         assert!(world.jobs.values().any(|job| job.status == JobStatus::OutOfMemory));
+    }
+
+    #[test]
+    fn shared_profile_exposes_a_qos_limited_learner_job() {
+        let world = initialize_scenario("dgx-shared", 1).unwrap();
+        let learner_jobs =
+            world.jobs.values().filter(|job| job.spec.user == "learner").collect::<Vec<_>>();
+
+        assert_eq!(learner_jobs.len(), 3);
+        assert!(learner_jobs.iter().any(|job| job.status == JobStatus::Running));
+        assert!(learner_jobs.iter().any(|job| {
+            job.status == JobStatus::Pending
+                && job.pending_reason == PendingReason::QosMaxJobsPerUserLimit
+        }));
+        assert!(
+            world
+                .accounting
+                .values()
+                .any(|record| { record.user == "learner" && record.state == JobStatus::Completed })
+        );
     }
 }

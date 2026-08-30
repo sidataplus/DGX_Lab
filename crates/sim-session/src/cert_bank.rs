@@ -2,8 +2,8 @@
 //! Loaded offline — no network and no host file reads at runtime.
 
 use assessment::{
-    finalize_certification, score_question, Answer, BlankDefinition, CertificationResult,
-    CertificationWeights, OptionItem, PassPolicy, Question, QuestionScore,
+    Answer, BlankDefinition, CertificationResult, CertificationWeights, OptionItem, PassPolicy,
+    Question, QuestionScore, finalize_certification, score_question,
 };
 use std::collections::BTreeSet;
 
@@ -43,12 +43,7 @@ pub fn certification_questions() -> Vec<Question> {
             id: "mc-003".into(),
             competency: "scheduling".into(),
             prompt: "Which command is most useful for seeing active and pending jobs?".into(),
-            options: opts(&[
-                ("a", "squeue"),
-                ("b", "sacctmgr"),
-                ("c", "nvidia-smi"),
-                ("d", "lfs"),
-            ]),
+            options: opts(&[("a", "squeue"), ("b", "sacctmgr"), ("c", "nvidia-smi"), ("d", "lfs")]),
             correct: "a".into(),
             points: 2,
             explanation: "squeue presents queued and running jobs.".into(),
@@ -75,8 +70,7 @@ pub fn certification_questions() -> Vec<Question> {
             ]),
             correct: "b".into(),
             points: 2,
-            explanation: "CUDA_VISIBLE_DEVICES remaps only allocated devices into the job."
-                .into(),
+            explanation: "CUDA_VISIBLE_DEVICES remaps only allocated devices into the job.".into(),
         },
         Question::MultiSelect {
             id: "ms-001".into(),
@@ -99,9 +93,7 @@ pub fn certification_questions() -> Vec<Question> {
             prompt: "Complete: srun --gres=____:h200:1".into(),
             blanks: vec![BlankDefinition {
                 id: "blank-1".into(),
-                accepted: vec![assessment::AcceptedAnswer::Literal {
-                    value: "gpu".into(),
-                }],
+                accepted: vec![assessment::AcceptedAnswer::Literal { value: "gpu".into() }],
                 case_insensitive: true,
                 trim: true,
                 normalize_whitespace: true,
@@ -115,9 +107,7 @@ pub fn certification_questions() -> Vec<Question> {
             prompt: "Command that submits a batch script: ____ train.sbatch".into(),
             blanks: vec![BlankDefinition {
                 id: "blank-1".into(),
-                accepted: vec![assessment::AcceptedAnswer::Literal {
-                    value: "sbatch".into(),
-                }],
+                accepted: vec![assessment::AcceptedAnswer::Literal { value: "sbatch".into() }],
                 case_insensitive: true,
                 trim: true,
                 normalize_whitespace: true,
@@ -129,31 +119,17 @@ pub fn certification_questions() -> Vec<Question> {
 }
 
 fn opts(items: &[(&str, &str)]) -> Vec<OptionItem> {
-    items
-        .iter()
-        .map(|(id, text)| OptionItem {
-            id: (*id).into(),
-            text: (*text).into(),
-        })
-        .collect()
+    items.iter().map(|(id, text)| OptionItem { id: (*id).into(), text: (*text).into() }).collect()
 }
 
 #[must_use]
 pub fn default_pass_policy() -> PassPolicy {
-    PassPolicy {
-        overall_percent: 80,
-        knowledge_percent: 70,
-        require_all_critical_practical: true,
-    }
+    PassPolicy { overall_percent: 80, knowledge_percent: 70, require_all_critical_practical: true }
 }
 
 #[must_use]
 pub fn default_weights() -> CertificationWeights {
-    CertificationWeights {
-        practical: 60,
-        multiple_choice: 25,
-        fill_blank: 15,
-    }
+    CertificationWeights { practical: 60, multiple_choice: 25, fill_blank: 15 }
 }
 
 /// Score a full set of answers; practical percent is supplied from the lab engine.
@@ -201,21 +177,13 @@ pub fn score_certification(
 }
 
 fn percent(earned: u32, possible: u32) -> u8 {
-    if possible == 0 {
-        0
-    } else {
-        ((earned * 100) / possible) as u8
-    }
+    if possible == 0 { 0 } else { ((earned * 100) / possible) as u8 }
 }
 
 fn default_empty_answer(question: &Question) -> Answer {
     match question {
-        Question::SingleChoice { .. } => Answer::SingleChoice {
-            option_id: String::new(),
-        },
-        Question::MultiSelect { .. } => Answer::MultiSelect {
-            option_ids: BTreeSet::new(),
-        },
+        Question::SingleChoice { .. } => Answer::SingleChoice { option_id: String::new() },
+        Question::MultiSelect { .. } => Answer::MultiSelect { option_ids: BTreeSet::new() },
         Question::FillBlank { blanks, .. } => Answer::FillBlank {
             values: blanks.iter().map(|blank| (blank.id.clone(), String::new())).collect(),
         },
@@ -232,12 +200,12 @@ mod tests {
         let mut answers = Vec::new();
         for question in &bank {
             let answer = match question {
-                Question::SingleChoice { correct, .. } => Answer::SingleChoice {
-                    option_id: correct.clone(),
-                },
-                Question::MultiSelect { correct, .. } => Answer::MultiSelect {
-                    option_ids: correct.clone(),
-                },
+                Question::SingleChoice { correct, .. } => {
+                    Answer::SingleChoice { option_id: correct.clone() }
+                }
+                Question::MultiSelect { correct, .. } => {
+                    Answer::MultiSelect { option_ids: correct.clone() }
+                }
                 Question::FillBlank { blanks, .. } => Answer::FillBlank {
                     values: blanks
                         .iter()

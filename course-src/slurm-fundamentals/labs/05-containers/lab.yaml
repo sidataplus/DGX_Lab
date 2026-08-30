@@ -20,29 +20,35 @@ objectives:
   competency: gpu-isolation
   description: Diagnose a missing-image error.
 steps:
-- id: step-1
-  instruction: Load the simulated Singularity module.
+- id: step-0
+  instruction: Request an isolated GPU allocation
   evidence:
-  - command transcript
-  - resulting simulator state
+  - The container exercise should begin inside a scheduler-owned allocation.
+  critical: false
+- id: step-1
+  instruction: Load the container module
+  evidence:
+  - The terminal should acknowledge the simulated module environment.
   critical: false
 - id: step-2
-  instruction: Run the PyTorch lab image with `--nv`.
+  instruction: Run the synthetic container workload
   evidence:
-  - command transcript
-  - resulting simulator state
+  - Tie the container command to a scheduler-owned GPU allocation.
   critical: false
 - id: step-3
-  instruction: Verify that the container sees only the allocated GPU.
+  instruction: Verify allocation-level GPU isolation
   evidence:
-  - command transcript
-  - resulting simulator state
-  critical: true
+  - The active shell should expose only the GPU assigned by the scheduler.
+  critical: false
 - id: step-4
-  instruction: Diagnose a missing-image error.
+  instruction: Submit and observe the missing-image failure
   evidence:
-  - command transcript
-  - resulting simulator state
+  - The separately named `container-missing` job should reach `FAILED` after using `/missing/pytorch-lab.sif`.
+  critical: true
+- id: step-5
+  instruction: Inspect the missing-image job log
+  evidence:
+  - Inspect stderr after the named failure before choosing a correction.
   critical: true
 hints:
 - level: 1

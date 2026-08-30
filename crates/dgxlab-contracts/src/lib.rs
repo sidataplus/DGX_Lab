@@ -176,6 +176,8 @@ pub enum SimResponse {
 /// UI-facing authoritative snapshot. Derived only from the simulation worker.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct UiWorldView {
+    /// Active course lab. Kept separate from `scenario_id` because several labs share a scenario.
+    pub lab_id: String,
     pub scenario_id: String,
     pub seed: u64,
     pub now_ms: u64,
@@ -185,6 +187,8 @@ pub struct UiWorldView {
     pub prompt: String,
     pub gpus: Vec<UiGpuTile>,
     pub jobs: Vec<UiJobSummary>,
+    /// Readable learner checkpoint paths, sorted for deterministic latest-path selection.
+    pub checkpoint_paths: Vec<String>,
     pub node_status: String,
     pub lab_steps: Vec<UiLabStep>,
     pub hint_level: u8,
@@ -253,6 +257,7 @@ mod tests {
         let response = SimResponse::State {
             seq: 3,
             state: UiWorldView {
+                lab_id: "04-one-gpu".into(),
                 scenario_id: "dgx-h200-8".into(),
                 seed: 1,
                 now_ms: 0,
@@ -267,6 +272,7 @@ mod tests {
                     owner_job_id: None,
                 }],
                 jobs: vec![],
+                checkpoint_paths: vec![],
                 node_status: "idle".into(),
                 lab_steps: vec![],
                 hint_level: 0,
@@ -276,6 +282,10 @@ mod tests {
             },
         };
         let json = serde_json::to_string(&response).expect("serialize");
+        assert!(
+            json.contains("\"lab_id\""),
+            "learner-facing snapshots must identify the active lab independently of its scenario"
+        );
         let decoded: SimResponse = serde_json::from_str(&json).expect("deserialize");
         assert_eq!(response, decoded);
     }

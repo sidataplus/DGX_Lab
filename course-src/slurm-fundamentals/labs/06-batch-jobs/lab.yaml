@@ -20,29 +20,30 @@ objectives:
   competency: logs
   description: Use `sacct` after completion.
 steps:
-- id: step-1
-  instruction: Edit `train.sbatch` with resource directives.
+- id: edit-script
+  instruction: Save and preflight the batch script
   evidence:
-  - command transcript
-  - resulting simulator state
+  - A learner write must save explicit resources, runtime, and output paths; the seeded file alone is not evidence.
   critical: false
-- id: step-2
-  instruction: Validate and submit the script.
+- id: submit-batch
+  instruction: Submit the batch script
   evidence:
-  - command transcript
-  - resulting simulator state
+  - Capture the returned job ID and locate it in the queue.
   critical: false
-- id: step-3
-  instruction: Inspect output and error paths.
+- id: job-progress
+  instruction: Advance until the batch job completes
   evidence:
-  - command transcript
-  - resulting simulator state
-  critical: false
-- id: step-4
-  instruction: Use `sacct` after completion.
+  - Completion must exist in simulator state before the lab can close.
+  critical: true
+- id: inspect-logs
+  instruction: Inspect the generated logs
   evidence:
-  - command transcript
-  - resulting simulator state
+  - After completion, connect the virtual output file to the submitted job.
+  critical: true
+- id: accounting
+  instruction: Review the completed job in accounting
+  evidence:
+  - Use terminal state and elapsed time as durable completion evidence.
   critical: true
 hints:
 - level: 1

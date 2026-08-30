@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use sim_core::SimulationWorld;
 use slurm_model::{JobSpec, JobStatus, Tres};
 use std::collections::BTreeMap;
-use virtual_fs::{normalize_path, VfsError};
+use virtual_fs::{VfsError, normalize_path};
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ShellSession {
@@ -208,11 +208,9 @@ fn echo(shell: &ShellSession, args: &[String]) -> CommandResult {
                         .cloned()
                         .or_else(|| shell.active_job_id.map(|id| id.0.to_string()))
                         .unwrap_or_default(),
-                    "CUDA_VISIBLE_DEVICES" => shell
-                        .env
-                        .get("CUDA_VISIBLE_DEVICES")
-                        .cloned()
-                        .unwrap_or_default(),
+                    "CUDA_VISIBLE_DEVICES" => {
+                        shell.env.get("CUDA_VISIBLE_DEVICES").cloned().unwrap_or_default()
+                    }
                     _ => shell.env.get(name).cloned().unwrap_or_default(),
                 }
             } else {
@@ -225,11 +223,8 @@ fn echo(shell: &ShellSession, args: &[String]) -> CommandResult {
 }
 
 fn env(shell: &ShellSession) -> CommandResult {
-    let entries: Vec<String> = shell
-        .env
-        .iter()
-        .map(|(key, value)| format!("{key}={value}"))
-        .collect();
+    let entries: Vec<String> =
+        shell.env.iter().map(|(key, value)| format!("{key}={value}")).collect();
     CommandResult::stdout(entries.join("\n"))
 }
 
@@ -247,7 +242,9 @@ fn touch(world: &mut SimulationWorld, shell: &ShellSession, path: Option<&str>) 
     let Some(path) = path else {
         return CommandResult::error("touch: missing virtual path");
     };
-    match resolve_path(&shell.cwd, path).and_then(|path| world.fs.write_file(&path, b"").map(|_| path)) {
+    match resolve_path(&shell.cwd, path)
+        .and_then(|path| world.fs.write_file(&path, b"").map(|_| path))
+    {
         Ok(_) => CommandResult { lines: vec![], state_changed: true },
         Err(error) => CommandResult::error(format!("touch: {error}")),
     }
@@ -306,10 +303,7 @@ fn squeue(world: &SimulationWorld, args: &[String]) -> CommandResult {
         let location = if job.status == JobStatus::Pending {
             format!("({})", job.pending_reason.display_name())
         } else {
-            job.allocation
-                .as_ref()
-                .map(|allocation| allocation.node_id.clone())
-                .unwrap_or_default()
+            job.allocation.as_ref().map(|allocation| allocation.node_id.clone()).unwrap_or_default()
         };
         output.push(format!(
             "{:<8} {:<10} {:<16} {:<10} {:<3} {:<10} {}",
@@ -341,6 +335,9 @@ fn sbatch(world: &mut SimulationWorld, shell: &ShellSession, path: Option<&str>)
         Ok(value) => value,
         Err(error) => return CommandResult::error(format!("sbatch: error: {error}")),
     };
+    if let Err(error) = validate_virtual_inputs(world, shell, &spec) {
+        return CommandResult::error(format!("sbatch: error: {error}"));
+    }
     let mut submitted = Vec::new();
     let tasks = if array_tasks.is_empty() {
         vec![None]
@@ -372,10 +369,7 @@ fn sbatch(world: &mut SimulationWorld, shell: &ShellSession, path: Option<&str>)
         )
     };
     CommandResult {
-        lines: vec![TerminalLine {
-            kind: TerminalKind::Success,
-            text,
-        }],
+        lines: vec![TerminalLine { kind: TerminalKind::Success, text }],
         state_changed: true,
     }
 }
@@ -390,7 +384,11 @@ fn srun(
         Ok(spec) => spec,
         Err(error) => return CommandResult::error(format!("srun: error: {error}")),
     };
-    let interactive = allocation_only || spec.command == "bash" || args.iter().any(|arg| arg == "--pty");
+    if let Err(error) = validate_virtual_inputs(world, shell, &spec) {
+        return CommandResult::error(format!("srun: error: {error}"));
+    }
+    let interactive =
+        allocation_only || spec.command == "bash" || args.iter().any(|arg| arg == "--pty");
     if interactive {
         spec.workload_id = "interactive-shell-v1".into();
         spec.name = if allocation_only { "allocation".into() } else { "interactive".into() };
@@ -406,6 +404,7 @@ fn srun(
                     .map(|allocation| allocation.node_id.clone())
                     .unwrap_or_else(|| "dgx-h200-01".into());
                 shell.env.insert("SLURM_JOB_ID".into(), job_id.0.to_string());
+                shell.env.insert("SLURM_CPUS_PER_TASK".into(), job.spec.resources.cpus.to_string());
                 let visible = job
                     .allocation
                     .as_ref()
@@ -464,7 +463,10 @@ fn scontrol(world: &SimulationWorld, args: &[String]) -> CommandResult {
                 return CommandResult::error("scontrol: invalid job ID");
             };
             let Some(job) = world.jobs.get(&job_id) else {
-                return CommandResult::error(format!("slurm_load_jobs error: Invalid job id specified: {}", job_id.0));
+                return CommandResult::error(format!(
+                    "slurm_load_jobs error: Invalid job id specified: {}",
+                    job_id.0
+                ));
             };
             CommandResult::stdout(format!(
                 "JobId={} JobName={} UserId={} Account={} QOS={}\n   JobState={:?} Reason={} Partition={}\n   NumCPUs={} ReqMem={}M TresPerNode=gres/gpu:{}\n   NodeList={} RunTime={} TimeLimit={}",
@@ -479,7 +481,10 @@ fn scontrol(world: &SimulationWorld, args: &[String]) -> CommandResult {
                 job.spec.resources.cpus,
                 job.spec.resources.memory_mib,
                 job.spec.resources.gpus,
-                job.allocation.as_ref().map(|allocation| allocation.node_id.as_str()).unwrap_or("(null)"),
+                job.allocation
+                    .as_ref()
+                    .map(|allocation| allocation.node_id.as_str())
+                    .unwrap_or("(null)"),
                 format_duration(job.elapsed_ms(world.now)),
                 format_duration(job.spec.time_limit_ms)
             ))
@@ -487,7 +492,9 @@ fn scontrol(world: &SimulationWorld, args: &[String]) -> CommandResult {
         "node" => {
             let node_id = &args[2];
             let Some(node) = world.cluster.nodes.get(node_id) else {
-                return CommandResult::error(format!("slurm_load_node error: Invalid node name specified: {node_id}"));
+                return CommandResult::error(format!(
+                    "slurm_load_node error: Invalid node name specified: {node_id}"
+                ));
             };
             CommandResult::stdout(format!(
                 "NodeName={} State={:?} CPUs={} AllocCPUs={} RealMemory={} AllocMem={} Gres=gpu:h200:{}",
@@ -533,7 +540,9 @@ fn sacct(world: &SimulationWorld, args: &[String]) -> CommandResult {
 
 fn nvidia_smi(world: &SimulationWorld, shell: &ShellSession, args: &[String]) -> CommandResult {
     let Some(job_id) = shell.active_job_id else {
-        return CommandResult::error("NVIDIA-SMI has failed because no GPU allocation is active in this simulated shell.");
+        return CommandResult::error(
+            "NVIDIA-SMI has failed because no GPU allocation is active in this simulated shell.",
+        );
     };
     let Some(job) = world.jobs.get(&job_id) else {
         return CommandResult::error("NVIDIA-SMI: simulated allocation no longer exists");
@@ -541,21 +550,25 @@ fn nvidia_smi(world: &SimulationWorld, shell: &ShellSession, args: &[String]) ->
     let Some(allocation) = job.allocation.as_ref() else {
         return CommandResult::error("NVIDIA-SMI: job has no GPU allocation");
     };
+    if allocation.gpu_indices.is_empty() {
+        return CommandResult::error("NVIDIA-SMI: active job has no GPU allocation");
+    }
     if args.iter().any(|arg| arg == "-L") {
         let lines: Vec<String> = allocation
             .gpu_indices
             .iter()
             .enumerate()
-            .map(|(logical, physical)| {
-                format!("GPU {logical}: H200 (UUID: SIM-GPU-{physical:04})")
-            })
+            .map(|(logical, physical)| format!("GPU {logical}: H200 (UUID: SIM-GPU-{physical:04})"))
             .collect();
         return CommandResult::stdout(lines.join("\n"));
     }
     CommandResult::stdout(format!(
         "DGX Lab simulated NVIDIA-SMI\nAllocated GPUs: {}\nCUDA_VISIBLE_DEVICES={}",
         allocation.gpu_indices.len(),
-        (0..allocation.gpu_indices.len()).map(|index| index.to_string()).collect::<Vec<_>>().join(",")
+        (0..allocation.gpu_indices.len())
+            .map(|index| index.to_string())
+            .collect::<Vec<_>>()
+            .join(",")
     ))
 }
 
@@ -574,7 +587,9 @@ fn module(shell: &mut ShellSession, args: &[String]) -> CommandResult {
             CommandResult { lines: vec![], state_changed: true }
         }
         Some("list") => CommandResult::stdout(shell.loaded_modules.join("\n")),
-        Some("avail") | None => CommandResult::stdout("singularity/4.5.0\ncuda/12.8\nnccl/2.25\npytorch/2.11"),
+        Some("avail") | None => {
+            CommandResult::stdout("singularity/4.5.0\ncuda/12.8\nnccl/2.25\npytorch/2.11")
+        }
         _ => CommandResult::error("module: supported operations: avail, load, list, purge"),
     }
 }
@@ -586,6 +601,45 @@ fn simulated_runtime(
     args: &[String],
 ) -> CommandResult {
     if shell.active_job_id.is_some() {
+        if command == "torchrun" {
+            let job = shell.active_job_id.and_then(|job_id| world.jobs.get(&job_id));
+            let gpu_count = job
+                .and_then(|job| job.allocation.as_ref())
+                .map(|allocation| allocation.gpu_indices.len())
+                .unwrap_or(0);
+            if gpu_count == 0 {
+                return CommandResult::error(
+                    "torchrun: active allocation does not contain any GPUs",
+                );
+            }
+            let processes = option_value(args, "--nproc_per_node")
+                .or_else(|| option_value(args, "--nproc-per-node"))
+                .and_then(|value| value.parse::<usize>().ok());
+            let Some(processes) = processes else {
+                return CommandResult::error(
+                    "torchrun: provide a numeric --nproc_per_node matching the allocated GPU count",
+                );
+            };
+            if processes != gpu_count {
+                return CommandResult::error(format!(
+                    "torchrun: --nproc_per_node ({processes}) must match the allocated GPU count ({gpu_count})"
+                ));
+            }
+        }
+        if command == "singularity" {
+            let Some(image) = args.iter().find(|argument| argument.ends_with(".sif")) else {
+                return CommandResult::error("singularity: simulated image path is required");
+            };
+            let image = match resolve_path(&shell.cwd, image) {
+                Ok(path) => path,
+                Err(error) => return CommandResult::error(format!("singularity: {error}")),
+            };
+            if !world.fs.exists(&image) {
+                return CommandResult::error(format!(
+                    "singularity: simulated image does not exist: {image}"
+                ));
+            }
+        }
         return CommandResult::stdout(format!(
             "DGX Lab simulated {command} workload accepted inside allocation. No host process was executed.\nArguments: {}",
             args.join(" ")
@@ -604,9 +658,13 @@ fn exit_allocation(world: &mut SimulationWorld, shell: &mut ShellSession) -> Com
             shell.active_job_id = None;
             shell.hostname = "dgx-login-01".into();
             shell.env.remove("SLURM_JOB_ID");
+            shell.env.remove("SLURM_CPUS_PER_TASK");
             shell.env.remove("CUDA_VISIBLE_DEVICES");
             CommandResult {
-                lines: vec![TerminalLine { kind: TerminalKind::System, text: format!("exit: released allocation {}", job_id.0) }],
+                lines: vec![TerminalLine {
+                    kind: TerminalKind::System,
+                    text: format!("exit: released allocation {}", job_id.0),
+                }],
                 state_changed: true,
             }
         }
@@ -636,11 +694,7 @@ pub fn job_spec_from_script_with_array(
         }
     }
     let (mut spec, array_tasks) = job_spec_from_args_with_array(&args, user)?;
-    spec.command = if commands.is_empty() {
-        "bash".into()
-    } else {
-        commands.join(" ")
-    };
+    spec.command = if commands.is_empty() { "bash".into() } else { commands.join(" ") };
     spec.workload_id = infer_workload_id(&spec.command, spec.resources.gpus);
     Ok((spec, array_tasks))
 }
@@ -667,18 +721,22 @@ pub fn job_spec_from_args_with_array(
             spec.name = value.into();
         } else if token == "--job-name" {
             index += 1;
-            spec.name = args.get(index).ok_or_else(|| ShellError::MissingValue(token.clone()))?.clone();
+            spec.name =
+                args.get(index).ok_or_else(|| ShellError::MissingValue(token.clone()))?.clone();
         } else if let Some(value) = token.strip_prefix("--partition=") {
             spec.partition = value.into();
         } else if token == "--partition" || token == "-p" {
             index += 1;
-            spec.partition = args.get(index).ok_or_else(|| ShellError::MissingValue(token.clone()))?.clone();
+            spec.partition =
+                args.get(index).ok_or_else(|| ShellError::MissingValue(token.clone()))?.clone();
         } else if let Some(value) = token.strip_prefix("--cpus-per-task=") {
-            spec.resources.cpus = value.parse().map_err(|_| ShellError::InvalidNumber(value.into()))?;
+            spec.resources.cpus =
+                value.parse().map_err(|_| ShellError::InvalidNumber(value.into()))?;
         } else if token == "--cpus-per-task" || token == "-c" {
             index += 1;
             let value = args.get(index).ok_or_else(|| ShellError::MissingValue(token.clone()))?;
-            spec.resources.cpus = value.parse().map_err(|_| ShellError::InvalidNumber(value.clone()))?;
+            spec.resources.cpus =
+                value.parse().map_err(|_| ShellError::InvalidNumber(value.clone()))?;
         } else if let Some(value) = token.strip_prefix("--mem=") {
             spec.resources.memory_mib = parse_memory_mib(value)?;
         } else if token == "--mem" {
@@ -698,21 +756,25 @@ pub fn job_spec_from_args_with_array(
             let value = args.get(index).ok_or_else(|| ShellError::MissingValue(token.clone()))?;
             parse_gres(value, &mut spec.resources)?;
         } else if let Some(value) = token.strip_prefix("--gpus=") {
-            spec.resources.gpus = value.parse().map_err(|_| ShellError::InvalidNumber(value.into()))?;
+            spec.resources.gpus =
+                value.parse().map_err(|_| ShellError::InvalidNumber(value.into()))?;
             spec.resources.gpu_type = Some("h200".into());
         } else if token == "--gpus" || token == "-G" {
             index += 1;
             let value = args.get(index).ok_or_else(|| ShellError::MissingValue(token.clone()))?;
-            spec.resources.gpus = value.parse().map_err(|_| ShellError::InvalidNumber(value.clone()))?;
+            spec.resources.gpus =
+                value.parse().map_err(|_| ShellError::InvalidNumber(value.clone()))?;
             spec.resources.gpu_type = Some("h200".into());
         } else if token == "--account" || token == "-A" {
             index += 1;
-            spec.account = args.get(index).ok_or_else(|| ShellError::MissingValue(token.clone()))?.clone();
+            spec.account =
+                args.get(index).ok_or_else(|| ShellError::MissingValue(token.clone()))?.clone();
         } else if let Some(value) = token.strip_prefix("--account=") {
             spec.account = value.into();
         } else if token == "--qos" {
             index += 1;
-            spec.qos = args.get(index).ok_or_else(|| ShellError::MissingValue(token.clone()))?.clone();
+            spec.qos =
+                args.get(index).ok_or_else(|| ShellError::MissingValue(token.clone()))?.clone();
         } else if let Some(value) = token.strip_prefix("--qos=") {
             spec.qos = value.into();
         } else if let Some(value) = token.strip_prefix("--output=") {
@@ -739,9 +801,7 @@ pub fn job_spec_from_args_with_array(
             array_tasks = parse_array_spec(value)?;
         } else if token == "--array" {
             index += 1;
-            let value = args
-                .get(index)
-                .ok_or_else(|| ShellError::MissingValue(token.clone()))?;
+            let value = args.get(index).ok_or_else(|| ShellError::MissingValue(token.clone()))?;
             array_tasks = parse_array_spec(value)?;
         } else if token.starts_with('-') {
             return Err(ShellError::UnsupportedOption(token.clone()));
@@ -769,23 +829,14 @@ fn parse_array_spec(value: &str) -> Result<Vec<u32>, ShellError> {
             continue;
         }
         if let Some((start, rest)) = part.split_once('-') {
-            let start: u32 = start
-                .parse()
-                .map_err(|_| ShellError::InvalidNumber(part.into()))?;
+            let start: u32 = start.parse().map_err(|_| ShellError::InvalidNumber(part.into()))?;
             let (end, step) = if let Some((end, step)) = rest.split_once(':') {
                 (
-                    end.parse::<u32>()
-                        .map_err(|_| ShellError::InvalidNumber(part.into()))?,
-                    step.parse::<u32>()
-                        .map_err(|_| ShellError::InvalidNumber(part.into()))?
-                        .max(1),
+                    end.parse::<u32>().map_err(|_| ShellError::InvalidNumber(part.into()))?,
+                    step.parse::<u32>().map_err(|_| ShellError::InvalidNumber(part.into()))?.max(1),
                 )
             } else {
-                (
-                    rest.parse::<u32>()
-                        .map_err(|_| ShellError::InvalidNumber(part.into()))?,
-                    1,
-                )
+                (rest.parse::<u32>().map_err(|_| ShellError::InvalidNumber(part.into()))?, 1)
             };
             if end < start {
                 return Err(ShellError::InvalidNumber(part.into()));
@@ -801,10 +852,7 @@ fn parse_array_spec(value: &str) -> Result<Vec<u32>, ShellError> {
                 }
             }
         } else {
-            tasks.push(
-                part.parse()
-                    .map_err(|_| ShellError::InvalidNumber(part.into()))?,
-            );
+            tasks.push(part.parse().map_err(|_| ShellError::InvalidNumber(part.into()))?);
         }
     }
     if tasks.is_empty() {
@@ -830,11 +878,13 @@ fn parse_gres(value: &str, resources: &mut Tres) -> Result<(), ShellError> {
     match parts.as_slice() {
         ["gpu", count] => {
             resources.gpu_type = Some("h200".into());
-            resources.gpus = count.parse().map_err(|_| ShellError::InvalidNumber((*count).into()))?;
+            resources.gpus =
+                count.parse().map_err(|_| ShellError::InvalidNumber((*count).into()))?;
         }
         ["gpu", gpu_type, count] => {
             resources.gpu_type = Some((*gpu_type).into());
-            resources.gpus = count.parse().map_err(|_| ShellError::InvalidNumber((*count).into()))?;
+            resources.gpus =
+                count.parse().map_err(|_| ShellError::InvalidNumber((*count).into()))?;
         }
         _ => return Err(ShellError::InvalidGres(value.into())),
     }
@@ -842,7 +892,9 @@ fn parse_gres(value: &str, resources: &mut Tres) -> Result<(), ShellError> {
 }
 
 fn parse_dependency(value: &str) -> Result<Option<JobId>, ShellError> {
-    let value = value.strip_prefix("afterok:").ok_or_else(|| ShellError::UnsupportedDependency(value.into()))?;
+    let value = value
+        .strip_prefix("afterok:")
+        .ok_or_else(|| ShellError::UnsupportedDependency(value.into()))?;
     let id = value.parse().map_err(|_| ShellError::InvalidNumber(value.into()))?;
     Ok(Some(JobId(id)))
 }
@@ -850,7 +902,8 @@ fn parse_dependency(value: &str) -> Result<Option<JobId>, ShellError> {
 pub fn parse_memory_mib(value: &str) -> Result<u64, ShellError> {
     let value = value.trim();
     let split = value.find(|character: char| !character.is_ascii_digit()).unwrap_or(value.len());
-    let number: u64 = value[..split].parse().map_err(|_| ShellError::InvalidNumber(value.into()))?;
+    let number: u64 =
+        value[..split].parse().map_err(|_| ShellError::InvalidNumber(value.into()))?;
     let suffix = value[split..].to_ascii_uppercase();
     match suffix.as_str() {
         "" | "M" | "MB" => Ok(number),
@@ -879,9 +932,8 @@ pub fn parse_duration_ms(value: &str) -> Result<u64, ShellError> {
 
     let (days, clock, has_day_prefix) = match value.split_once('-') {
         Some((days, clock)) if !days.is_empty() && !clock.is_empty() => {
-            let days = days
-                .parse::<u64>()
-                .map_err(|_| ShellError::InvalidDuration(value.into()))?;
+            let days =
+                days.parse::<u64>().map_err(|_| ShellError::InvalidDuration(value.into()))?;
             (days, clock, true)
         }
         Some(_) => return Err(ShellError::InvalidDuration(value.into())),
@@ -933,9 +985,7 @@ fn parse_time_component(component: &str, original: &str) -> Result<u64, ShellErr
     if component.is_empty() || !component.chars().all(|character| character.is_ascii_digit()) {
         return Err(ShellError::InvalidDuration(original.into()));
     }
-    component
-        .parse::<u64>()
-        .map_err(|_| ShellError::InvalidDuration(original.into()))
+    component.parse::<u64>().map_err(|_| ShellError::InvalidDuration(original.into()))
 }
 
 fn parse_bounded_time_component(
@@ -1016,6 +1066,31 @@ fn option_value(args: &[String], option: &str) -> Option<String> {
     None
 }
 
+fn validate_virtual_inputs(
+    world: &SimulationWorld,
+    shell: &ShellSession,
+    spec: &JobSpec,
+) -> Result<(), String> {
+    let command = tokenize(&spec.command);
+    if let Some(checkpoint) = option_value(&command, "--resume-from-checkpoint") {
+        let path = resolve_path(&shell.cwd, &checkpoint).map_err(|error| error.to_string())?;
+        let checkpoint_root = format!("/home/{}/checkpoints/", shell.user);
+        if !path.starts_with(&checkpoint_root) || !path.ends_with(".pt") {
+            return Err(format!("checkpoint must be a .pt file under {checkpoint_root}"));
+        }
+        match world.fs.read_file(&path) {
+            Ok(_) => {}
+            Err(VfsError::NotFound(_)) => {
+                return Err(format!("checkpoint does not exist: {path}"));
+            }
+            Err(_) => {
+                return Err(format!("checkpoint is not a readable file: {path}"));
+            }
+        }
+    }
+    Ok(())
+}
+
 fn format_duration(milliseconds: u64) -> String {
     let total_seconds = milliseconds / 1_000;
     let days = total_seconds / 86_400;
@@ -1086,7 +1161,8 @@ mod tests {
 
     #[test]
     fn parses_one_h200_gpu() {
-        let args = tokenize("--gres=gpu:h200:1 --cpus-per-task=8 --mem=64G --time=00:30:00 --pty bash");
+        let args =
+            tokenize("--gres=gpu:h200:1 --cpus-per-task=8 --mem=64G --time=00:30:00 --pty bash");
         let spec = job_spec_from_args(&args, "learner").unwrap();
         assert_eq!(spec.resources.gpus, 1);
         assert_eq!(spec.resources.memory_mib, 65_536);
@@ -1126,7 +1202,90 @@ python train.py --batch-size 64 --epochs 5
         );
         assert!(result.lines[0].text.contains("Granted job allocation"));
         assert!(shell.active_job_id.is_some());
+        let cpus = execute_line(&mut world, &mut shell, "echo $SLURM_CPUS_PER_TASK");
+        assert_eq!(cpus.lines[0].text, "8");
         let gpu = execute_line(&mut world, &mut shell, "nvidia-smi -L");
         assert!(gpu.lines[0].text.contains("GPU 0: H200"));
+    }
+
+    #[test]
+    fn nvidia_smi_rejects_an_active_cpu_only_allocation() {
+        let mut world = SimulationWorld::dgx_h200_8(7);
+        let mut shell = ShellSession::learner();
+        let allocated =
+            execute_line(&mut world, &mut shell, "srun --cpus-per-task=4 --mem=8G --pty bash");
+        assert!(allocated.lines[0].text.contains("Granted job allocation"));
+
+        let result = execute_line(&mut world, &mut shell, "nvidia-smi -L");
+
+        assert_eq!(result.lines[0].kind, TerminalKind::Stderr);
+        assert!(result.lines[0].text.contains("no GPU"));
+    }
+
+    #[test]
+    fn torchrun_process_count_must_match_active_gpu_allocation() {
+        let mut world = SimulationWorld::dgx_h200_8(7);
+        let mut shell = ShellSession::learner();
+        let allocated = execute_line(
+            &mut world,
+            &mut shell,
+            "salloc --gres=gpu:h200:4 --cpus-per-task=32 --mem=256G",
+        );
+        assert!(allocated.lines[0].text.contains("Granted job allocation"));
+
+        let mismatch =
+            execute_line(&mut world, &mut shell, "torchrun --nproc_per_node=2 train.py --epochs 3");
+        assert_eq!(mismatch.lines[0].kind, TerminalKind::Stderr);
+        assert!(mismatch.lines[0].text.contains("allocated GPU count (4)"));
+
+        let accepted =
+            execute_line(&mut world, &mut shell, "torchrun --nproc_per_node=4 train.py --epochs 3");
+        assert!(accepted.lines.iter().all(|line| line.kind != TerminalKind::Stderr));
+    }
+
+    #[test]
+    fn resume_submission_requires_an_existing_virtual_checkpoint() {
+        let mut world = SimulationWorld::dgx_h200_8(7);
+        let mut shell = ShellSession::learner();
+        let command = "srun --job-name=train-resume --gres=gpu:h200:1 --mem=64G python train.py --resume-from-checkpoint checkpoints/epoch-001.pt";
+
+        let missing = execute_line(&mut world, &mut shell, command);
+        assert_eq!(missing.lines[0].kind, TerminalKind::Stderr);
+        assert!(missing.lines[0].text.contains("checkpoint does not exist"));
+        assert!(world.jobs.is_empty());
+
+        let directory = execute_line(
+            &mut world,
+            &mut shell,
+            "srun --job-name=train-resume --gres=gpu:h200:1 --mem=64G python train.py --resume-from-checkpoint checkpoints",
+        );
+        assert_eq!(directory.lines[0].kind, TerminalKind::Stderr);
+        assert!(
+            directory.lines[0]
+                .text
+                .contains("checkpoint must be a .pt file under /home/learner/checkpoints/")
+        );
+        assert!(world.jobs.is_empty());
+
+        let wrong_scope = execute_line(
+            &mut world,
+            &mut shell,
+            "srun --job-name=train-resume --gres=gpu:h200:1 --mem=64G python train.py --resume-from-checkpoint train.sbatch",
+        );
+        assert_eq!(wrong_scope.lines[0].kind, TerminalKind::Stderr);
+        assert!(
+            wrong_scope.lines[0]
+                .text
+                .contains("checkpoint must be a .pt file under /home/learner/checkpoints/")
+        );
+        assert!(world.jobs.is_empty());
+
+        world
+            .fs
+            .write_file("/home/learner/checkpoints/epoch-001.pt", b"simulated checkpoint")
+            .unwrap();
+        let accepted = execute_line(&mut world, &mut shell, command);
+        assert!(accepted.lines.iter().all(|line| line.kind != TerminalKind::Stderr));
+        assert_eq!(world.jobs.len(), 1);
     }
 }

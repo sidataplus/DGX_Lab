@@ -20,29 +20,30 @@ objectives:
   competency: checkpointing
   description: Resubmit with corrected resources and resume.
 steps:
-- id: step-1
-  instruction: Use `sacct` to identify the terminal state.
+- id: sacct
+  instruction: Find the failed job in accounting
   evidence:
-  - command transcript
-  - resulting simulator state
+  - Identify the terminal state before choosing a remedy.
   critical: false
-- id: step-2
-  instruction: Read logs and distinguish GPU OOM from host OOM.
+- id: inspect-logs
+  instruction: Inspect logs for the failure signal
   evidence:
-  - command transcript
-  - resulting simulator state
+  - After the OOM, read stderr to distinguish symptoms from causes.
   critical: false
-- id: step-3
-  instruction: Select the newest valid checkpoint.
+- id: oom-observed
+  instruction: Explain the out-of-memory state
   evidence:
-  - command transcript
-  - resulting simulator state
+  - Connect the terminal state to a smaller batch size or larger memory request.
   critical: false
-- id: step-4
-  instruction: Resubmit with corrected resources and resume.
+- id: checkpoint
+  instruction: Locate the newest usable checkpoint
   evidence:
-  - command transcript
-  - resulting simulator state
+  - Read the newest pre-retry checkpoint before using it as a restart point.
+  critical: false
+- id: resume-submitted
+  instruction: Run a corrected recovery job to completion
+  evidence:
+  - The completed retry must preserve the partition, 4 GPUs, 16 CPUs, two-hour limit, exact 64 GiB request, and latest readable pre-retry checkpoint.
   critical: true
 hints:
 - level: 1
