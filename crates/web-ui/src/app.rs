@@ -112,7 +112,7 @@ pub fn App() -> impl IntoView {
     let script = RwSignal::new(initial_script);
     let script_status = RwSignal::new(initial_script_status);
     let selected_job = RwSignal::new(Option::<u64>::None);
-    let light_theme = RwSignal::new(false);
+    let light_theme = RwSignal::new(true);
     let announcement =
         RwSignal::new(String::from("DGX Lab is ready. Start with the recommended action."));
     let cert_result = RwSignal::new(Option::<String>::None);
@@ -258,7 +258,7 @@ pub fn App() -> impl IntoView {
                             .map(question_explanation)
                             .unwrap_or("Review this concept before trying again.");
                         format!(
-                            "{} {} — {}",
+                            "{} {}: {}",
                             if score.correct { "Correct" } else { "Review" },
                             score.question_id,
                             explanation
@@ -283,7 +283,7 @@ pub fn App() -> impl IntoView {
                     format!("Next: {}.", actions.join("; "))
                 };
                 let summary = format!(
-                    "{}\nOverall {}% · Knowledge {}% · Practical {}%\nAnswered {}/{} · {}/{} correct\n{}\n\n{}",
+                    "{}\nOverall {}% / Knowledge {}% / Practical {}%\nAnswered {}/{} / {}/{} correct\n{}\n\n{}",
                     if result.passed { "PASSED" } else { "NOT YET" },
                     result.overall_percent,
                     result.knowledge_percent,
@@ -320,20 +320,21 @@ pub fn App() -> impl IntoView {
 
             <header class="topbar">
                 <div class="brand-lockup">
-                    <span class="brand-mark" aria-hidden="true">"›_"</span>
+                    <span class="brand-mark" aria-hidden="true">"DL"</span>
                     <div>
                         <strong class="brand">"DGX Lab"</strong>
-                        <span class="subtitle">"A safe place to learn shared GPU computing"</span>
+                        <span class="subtitle">"Shared GPU systems, safely simulated"</span>
                     </div>
                 </div>
                 <div class="topbar-status" aria-label="Application status">
-                    <span class="pill success"><span aria-hidden="true">"●"</span> " Offline & local"</span>
-                    <span class="pill accent">"Simulation"</span>
+                    <span class="pill success">"Runs locally"</span>
+                    <span class="pill accent">"No real cluster"</span>
                     <button type="button" class="icon-button"
                         aria-label=move || if light_theme.get() { "Use dark theme" } else { "Use light theme" }
                         title=move || if light_theme.get() { "Use dark theme" } else { "Use light theme" }
                         on:click=move |_| light_theme.update(|value| *value = !*value)>
-                        {move || if light_theme.get() { "◐" } else { "☼" }}
+                        <span aria-hidden="true">{move || if light_theme.get() { "◐" } else { "○" }}</span>
+                        <span class="theme-label">{move || if light_theme.get() { "Dark view" } else { "Light view" }}</span>
                     </button>
                 </div>
             </header>
@@ -343,23 +344,23 @@ pub fn App() -> impl IntoView {
                     <button type="button" class=move || tab_class(mode.get() == WorkspaceMode::Learn)
                         aria-pressed=move || bool_text(mode.get() == WorkspaceMode::Learn)
                         on:click=move |_| mode.set(WorkspaceMode::Learn)>
-                        <span class="tab-number">"1"</span><span><strong>"Learn"</strong><small>"Guided lab"</small></span>
+                        <span class="tab-number">"01"</span><span><strong>"Learn"</strong><small>"Step-by-step lab"</small></span>
                     </button>
                     <button type="button" class=move || tab_class(mode.get() == WorkspaceMode::Practice)
                         aria-pressed=move || bool_text(mode.get() == WorkspaceMode::Practice)
                         on:click=move |_| mode.set(WorkspaceMode::Practice)>
-                        <span class="tab-number">"2"</span><span><strong>"Practice"</strong><small>"Free exploration"</small></span>
+                        <span class="tab-number">"02"</span><span><strong>"Practice"</strong><small>"Open sandbox"</small></span>
                     </button>
                     <button type="button" class=move || tab_class(mode.get() == WorkspaceMode::Assess)
                         aria-pressed=move || bool_text(mode.get() == WorkspaceMode::Assess)
                         on:click=move |_| mode.set(WorkspaceMode::Assess)>
-                        <span class="tab-number">"3"</span><span><strong>"Assess"</strong><small>"Check readiness"</small></span>
+                        <span class="tab-number">"03"</span><span><strong>"Assess"</strong><small>"Readiness review"</small></span>
                     </button>
                 </div>
 
                 <div class="clock-controls" hidden=move || mode.get() == WorkspaceMode::Assess
                     role="group" aria-label="Simulation clock">
-                    <span class="sim-time">{move || format!("Sim {}", format_sim_time(world.get().now_ms))}</span>
+                    <span class="sim-time">{move || format!("Lab time {}", format_sim_time(world.get().now_ms))}</span>
                     <div class="speed-group" role="group" aria-label="Clock speed">
                         <button type="button" class=move || speed_class(world.get().clock_multiplier == 1)
                             aria-pressed=move || bool_text(world.get().clock_multiplier == 1) on:click=set_speed(1)>"1×"</button>
@@ -372,7 +373,7 @@ pub fn App() -> impl IntoView {
                         {move || if world.get().paused { "Resume" } else { "Pause" }}
                     </button>
                     <details class="time-menu">
-                        <summary aria-label="More simulation time controls">"Advance"</summary>
+                        <summary aria-label="More simulation time controls">"Advance time"</summary>
                         <div class="time-menu-items">
                             <button type="button" on:click=advance(60_000)>"+1 minute"</button>
                             <button type="button" on:click=advance(600_000)>"+10 minutes"</button>
@@ -405,7 +406,7 @@ pub fn App() -> impl IntoView {
                                     .is_some_and(|value| !value.starts_with("Use the "));
                                 view! {
                                     <div class="next-action" aria-labelledby="next-action-title">
-                                        <span class="eyebrow">"RECOMMENDED NEXT ACTION"</span>
+                                        <span class="eyebrow">"DO THIS NEXT"</span>
                                         <h2 id="next-action-title">{step.label}</h2>
                                         <p>{evidence}</p>
                                         {command_text.clone().map(|value| view! { <code class="command-preview">{value}</code> })}
@@ -427,13 +428,13 @@ pub fn App() -> impl IntoView {
 
                             view! {
                                 <div class="mission-heading">
-                                    <div><p class="eyebrow">{format!("{} · MODULE {:02} OF {}", lab.track.to_uppercase(), lab_index + 1, BUILTIN_LABS.len())}</p>
+                                    <div><p class="eyebrow">{format!("{} / LAB {:02} OF {}", lab.track.to_uppercase(), lab_index + 1, BUILTIN_LABS.len())}</p>
                                         <h1 id="mission-title">{lab.title}</h1></div>
-                                    <span class="duration">{format!("~{} min", lab.estimated_minutes)}</span>
+                                    <span class="duration">{format!("{} min", lab.estimated_minutes)}</span>
                                 </div>
                                 <p class="mission-summary">{lab.summary}</p>
-                                <div class="progress-heading"><span>{format!("{} of {} actions", progress.completed, progress.total)}</span>
-                                    <strong>{format!("{}% evidence", snapshot.practical_percent)}</strong></div>
+                                <div class="progress-heading"><span>{format!("{} of {} actions complete", progress.completed, progress.total)}</span>
+                                    <strong>{format!("{}% practical evidence", snapshot.practical_percent)}</strong></div>
                                 <div class="progress-track" role="progressbar" aria-label="Lab actions complete"
                                     aria-valuemin="0" aria-valuemax="100" aria-valuenow=progress.percent.to_string()>
                                     <span class="progress-fill" style=format!("width: {}%", progress.percent)></span>
@@ -446,7 +447,7 @@ pub fn App() -> impl IntoView {
                                         <div class="next-action"><h2>"Explore the simulator"</h2><p>"Use the terminal and compare every command with the visual cluster state."</p></div>
                                     }.into_any())
                                 }}
-                                <div class="section-heading"><h2>"Your lab path"</h2><span>"Actions update from simulator evidence"</span></div>
+                                <div class="section-heading"><h2>"Lab path"</h2><span>"Updates from simulator evidence"</span></div>
                                 <ol class="progress-list">
                                     {snapshot.lab_steps.into_iter().enumerate().map(|(index, step)| {
                                         let is_current = !step.complete && next_id.as_deref() == Some(step.id.as_str());
@@ -487,7 +488,7 @@ pub fn App() -> impl IntoView {
                                             aria-current=move || if world.get().lab_id == id { "page" } else { "false" }
                                             on:click=open_lab(id, scenario, WorkspaceMode::Learn)>
                                             <span class="lab-number">{format!("{:02}", index + 1)}</span>
-                                            <span><strong>{lab.title}</strong><small>{format!("{} · {} min", lab.track, lab.estimated_minutes)}</small></span>
+                                            <span><strong>{lab.title}</strong><small>{format!("{} / {} min", lab.track, lab.estimated_minutes)}</small></span>
                                         </button>
                                     }
                                 }).collect_view()}
@@ -502,7 +503,7 @@ pub fn App() -> impl IntoView {
 
                     <section class="center-column" aria-label="Guided practice">
                         <section class="card terminal-card" aria-labelledby="learn-terminal-title">
-                            <div class="card-header"><div><p class="eyebrow">"SIMULATED WORKSPACE"</p><h2 id="learn-terminal-title">"Practice terminal"</h2></div>
+                            <div class="card-header"><div><p class="eyebrow">"SAFE SIMULATOR"</p><h2 id="learn-terminal-title">"Practice terminal"</h2></div>
                                 <button type="button" class="quiet-button" on:click=clear_terminal.clone()>"Clear transcript"</button></div>
                             <TerminalView terminal=terminal world=world />
                             <CommandComposer input_id="learn-command" input_ref=learn_command_ref command=command submit=submit.clone() />
@@ -512,7 +513,7 @@ pub fn App() -> impl IntoView {
                                 <div class="command-chips">
                                     {[("Cluster", "sinfo"), ("Queue", "squeue"), ("Accounting", "sacct"), ("Help", "help")]
                                         .into_iter().map(|(label, value)| view! {
-                                            <button type="button" on:click=move |_| command.set(value.into())>{format!("{label} · {value}")}</button>
+                                            <button type="button" on:click=move |_| command.set(value.into())>{format!("{label}: {value}")}</button>
                                         }).collect_view()}
                                 </div>
                             </details>
@@ -525,7 +526,7 @@ pub fn App() -> impl IntoView {
                 <section id="practice-workspace" class="workspace practice-layout"
                     aria-label="Free practice workspace" hidden=move || mode.get() != WorkspaceMode::Practice>
                     <aside class="card practice-brief" aria-labelledby="practice-title">
-                        <p class="eyebrow">"PRACTICE · SAFE FREE PLAY"</p>
+                        <p class="eyebrow">"OPEN PRACTICE"</p>
                         <h1 id="practice-title">"Turn a command into a reliable job"</h1>
                         <p>"Edit a virtual batch script, submit it, then explain what the scheduler did. Your current course lab stays connected to the same simulator state."</p>
                         <div class="practice-loop" aria-label="Recommended practice loop">
@@ -542,7 +543,7 @@ pub fn App() -> impl IntoView {
                             <strong>"Failure recovery"</strong><span>"Use logs and checkpoints as evidence"</span></button>
                         <div class="notice"><strong>"Current context"</strong><p>{move || {
                             let snapshot = world.get();
-                            active_lab(&snapshot.lab_id).map(|(_, lab)| format!("{} · {}", lab.title, snapshot.scenario_id)).unwrap_or(snapshot.scenario_id)
+                            active_lab(&snapshot.lab_id).map(|(_, lab)| format!("{} / {}", lab.title, snapshot.scenario_id)).unwrap_or(snapshot.scenario_id)
                         }}</p></div>
                     </aside>
 
@@ -572,7 +573,7 @@ pub fn App() -> impl IntoView {
                 <section id="assess-workspace" class="workspace assess-layout"
                     aria-label="Assessment workspace" hidden=move || mode.get() != WorkspaceMode::Assess>
                     <aside class="card assessment-overview" aria-labelledby="assessment-overview-title">
-                        <p class="eyebrow">"READINESS CHECK"</p>
+                        <p class="eyebrow">"LOCAL READINESS REVIEW"</p>
                         <h1 id="assessment-overview-title">"Show what you can do"</h1>
                         <p>"This local assessment combines capstone practical evidence with an offline knowledge check."</p>
                         <div class="readiness-score">
@@ -606,7 +607,7 @@ pub fn App() -> impl IntoView {
                     </aside>
 
                     <section class="card cert-panel" aria-labelledby="knowledge-check-title">
-                        <div class="card-header"><div><p class="eyebrow">"OFFLINE KNOWLEDGE CHECK"</p><h2 id="knowledge-check-title">"Explain the scheduler, not just the syntax"</h2></div><span class="pill neutral">"8 items"</span></div>
+                        <div class="card-header"><div><p class="eyebrow">"KNOWLEDGE REVIEW"</p><h2 id="knowledge-check-title">"Explain the scheduler, not just the syntax"</h2></div><span class="pill neutral">"8 items"</span></div>
                         <p class="lede">"Take your time. Your answers stay on this device and no identity is independently verified."</p>
                         <div class="cert-questions">
                             {cert_bank::certification_questions().into_iter().enumerate().map(|(index, question)| {
@@ -632,8 +633,8 @@ pub fn App() -> impl IntoView {
                 </section>
             </main>
 
-            <footer><span>"Independent educational software · Not affiliated with NVIDIA or SchedMD"</span>
-                <span>{move || format!("{} · seed {}", world.get().scenario_id, world.get().seed)}</span></footer>
+            <footer class="app-footer"><span>"Progress is stored in this browser."</span>
+                <span>{move || format!("Scenario {} / seed {}", world.get().scenario_id, world.get().seed)}</span></footer>
         </div>
     }
 }
@@ -664,11 +665,11 @@ fn ClusterPanel(
 ) -> impl IntoView {
     view! {
         <aside class="card cluster-card" aria-label="Virtual cluster">
-            <div class="card-header"><div><p class="eyebrow">"VISUAL EVIDENCE"</p><h2>"Virtual cluster"</h2></div>
-                <span class="node-state"><span aria-hidden="true">"●"</span>{move || format!(" {}", world.get().node_status)}</span></div>
+            <div class="card-header"><div><p class="eyebrow">"CLUSTER EVIDENCE"</p><h2>"Virtual cluster"</h2></div>
+                <span class="node-state">{move || world.get().node_status}</span></div>
             <p class="cluster-summary">{move || {
                 let snapshot = world.get();
-                format!("8 simulated H200 GPUs · {} active job(s)", active_job_count(&snapshot.jobs))
+                format!("8 simulated H200 GPUs / {} active job(s)", active_job_count(&snapshot.jobs))
             }}</p>
             <ClusterView world=world />
             <details class="evidence-drawer" open>
@@ -752,7 +753,7 @@ fn cert_question_view(
         }.into_any(),
         Question::MultiSelect { id, prompt, options, points, .. } => view! {
             <fieldset class="cert-q">
-                <legend><span>{format!("{:02}", number)}</span><strong>{prompt}</strong><small>{format!("{points} points · choose all that apply")}</small></legend>
+                <legend><span>{format!("{:02}", number)}</span><strong>{prompt}</strong><small>{format!("{points} points, choose all that apply")}</small></legend>
                 <div class="cert-options">{options.into_iter().map(|option| {
                     let question_id = id.clone(); let option_id = option.id.clone();
                     view! { <label class="cert-option"><input type="checkbox" value=option.id.clone() on:change=move |event| {
@@ -917,7 +918,7 @@ fn PendingPanel(
             .and_then(|id| jobs.iter().find(|job| job.id == id && job.status == "PENDING").cloned())
             .or_else(|| jobs.iter().find(|job| job.status == "PENDING").cloned());
             match selected { Some(job) if job.status == "PENDING" => view! {
-                <div class="notice pending-notice"><strong>{format!("Job {} · {}", job.id, job.pending_reason.unwrap_or_default())}</strong>
+                <div class="notice pending-notice"><strong>{format!("Job {} / {}", job.id, job.pending_reason.unwrap_or_default())}</strong>
                     <p>{job.pending_explanation.unwrap_or_default()}</p><small>"A pending job can be healthy. Inspect before resubmitting."</small></div>
             }.into_any(), _ => view! { <p class="empty-state">"Select a pending job to see a plain-language scheduler explanation."</p> }.into_any() }
         }}
@@ -941,7 +942,7 @@ fn DiagnosePanel(
                 "PENDING" => "Read the pending explanation and current GPU ownership before changing the request.",
                 "RUNNING" => "Verify resources and isolation from inside the allocation.",
                 _ => "Use accounting, logs, and resulting state together as evidence.", };
-                view! { <div class="job-evidence"><div><strong>{format!("Job {} · {}", job.id, job.status)}</strong><span>{job.name}</span></div>
+                view! { <div class="job-evidence"><div><strong>{format!("Job {} / {}", job.id, job.status)}</strong><span>{job.name}</span></div>
                     <dl><div><dt>"CPU"</dt><dd>{job.cpus}</dd></div><div><dt>"Memory"</dt><dd>{format!("{} GiB", job.memory_mib / 1_024)}</dd></div>
                         <div><dt>"GPU"</dt><dd>{job.gpus}</dd></div></dl><p>{tip}</p></div> }.into_any()
             }, None => view! { <p class="empty-state">"Select a job to connect its resource request, state, and next diagnostic step."</p> }.into_any() }

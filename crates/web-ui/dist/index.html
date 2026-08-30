@@ -3,15 +3,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Learn shared GPU computing safely in an offline SLURM simulator">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230b1f20'/%3E%3Cpath d='M18 20l12 12-12 12M34 44h12' fill='none' stroke='%235edbc0' stroke-width='6'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="/style-86b3632c245ac7f3.css" integrity="sha384-RTwSkRkBDtqw0fDavQH+dg3AMeKKfDZjD9tTlnT8w7ZwpgEMhj+dG1KGKE5VCISq"/>
+  <meta name="description" content="Learn shared GPU computing safely in a browser-local SLURM simulator that never connects to a real scheduler">
+  <meta name="referrer" content="no-referrer">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%23151918'/%3E%3Cpath d='M18 20l12 12-12 12M34 44h12' fill='none' stroke='%23ff7850' stroke-width='6'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/style-cba2c98fe62c08b0.css" integrity="sha384-SIOg6B4D6pB/VnYUNlGiJUi53L1nZuTqrfKtmypmFDcKNOdeEn+vN+EFG8+17v0r"/>
+  <link rel="stylesheet" href="/public-fce66fe86f164569.css" integrity="sha384-ja99dCdmfEk436WzE+zoHVwYQi1hHHnHFkbFNhu/qihsXijqGaiZiOSiYaZOe1fv"/>
   <title>DGX Lab</title>
-<link rel="modulepreload" href="/web-ui-f961d7fae81dd101.js" crossorigin="anonymous" integrity="sha384-rtBjTObIs8rU2eetyeG5udZ1U0yR74BuFKHtYCqBXUdOKHp5Kbp2TznLEM2xeDYC"><link rel="preload" href="/web-ui-f961d7fae81dd101_bg.wasm" crossorigin="anonymous" integrity="sha384-NK9s2MCTyILq1FF+Lui1epmnUMNk5jIYcXotj0ph7vxzm5BoHV8lbMkSX4d5BPIZ" as="fetch" type="application/wasm"></head>
+<link rel="modulepreload" href="/web-ui-d6461d84f352cebd.js" crossorigin="anonymous" integrity="sha384-JKF+p3nsN8qclI1MermxwNiUljFPLcAKhqil5+5xEdv52ZdTRDmFn7gMi3G4a1Sp"><link rel="preload" href="/web-ui-d6461d84f352cebd_bg.wasm" crossorigin="anonymous" integrity="sha384-dm2os6zAfZb3X8KhouauFTyhrwAa/unhtWFjMWfruIAWxAAygZyjudlO1/vGp9W0" as="fetch" type="application/wasm"></head>
 <body>
+  <footer class="public-release-footer" aria-label="Product and privacy notice">
+    <p><strong>Independent educational simulator.</strong> DGX Lab is not affiliated with, sponsored by, or endorsed by NVIDIA Corporation or SchedMD LLC.</p>
+    <p>Simulation runs locally on this device. No commands are sent to a real scheduler. Web-edition progress is stored only in this browser.</p>
+  </footer>
+
 <script type="module">
-import init, * as bindings from '/web-ui-f961d7fae81dd101.js';
-const wasm = await init({ module_or_path: '/web-ui-f961d7fae81dd101_bg.wasm' });
+import init, * as bindings from '/web-ui-d6461d84f352cebd.js';
+const wasm = await init({ module_or_path: '/web-ui-d6461d84f352cebd_bg.wasm' });
 
 
 window.wasmBindings = bindings;

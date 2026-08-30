@@ -8,17 +8,29 @@ DGX Lab is a standalone, deterministic simulation environment for learning SLURM
 
 Every module follows a consistent **Learn → Practice → Assess** rhythm. Learners receive one recommended action at a time, work entirely inside the simulated terminal, and advance only when the simulator observes the required evidence.
 
+### Guided learning
+
 ![Module 1 guided learning workspace with a recommended command, lab path, practice terminal, and virtual cluster](assets/screenshots/01-guided-foundations.png)
 
-*Module 1 begins with a concrete next action. The lab path distinguishes the current step from later work, while the virtual cluster connects each command to visible scheduler state.*
+**What to notice:** Module 1 begins with one concrete next action. The lab path separates current work from later evidence, while the terminal and virtual cluster keep the command and its scheduler effect visible together.
+
+### Open practice
+
+![Open practice workspace with a batch script editor, observation terminal, focused drills, and allocated virtual GPUs](assets/screenshots/04-open-practice.png)
+
+**What to notice:** Practice removes the step-by-step script without removing orientation. Learners use a predict, observe, explain loop, edit a virtual batch file, and compare the resulting queue and GPU state with terminal evidence.
+
+### Failure recovery
 
 ![Module 9 failure-recovery workspace showing an out-of-memory job, recommended accounting command, lab path, and GPU state](assets/screenshots/02-failure-recovery.png)
 
-*Module 9 turns an out-of-memory failure into a diagnosis-and-recovery exercise. Job state, GPU state, and the required evidence stay visible together so learners can inspect the failure before choosing a remedy.*
+**What to notice:** Module 9 turns an out-of-memory event into a diagnosis-and-recovery exercise. Warning colors are reserved for the affected GPU and failed job, and the next action asks learners to inspect accounting before changing the workload.
+
+### Mobile capstone
 
 ![Mobile capstone view showing the Learn, Practice, and Assess journey with a recommended next action](assets/screenshots/03-mobile-capstone.png)
 
-*The same journey reflows for narrow screens: controls remain touch-friendly, the recommended action stays prominent, and the capstone opens with an explicit evidence-backed objective.*
+**What to notice:** The same journey reflows for narrow screens. Controls remain touch-friendly, the recommended action stays prominent, and the capstone opens with an explicit evidence-backed objective rather than a compressed desktop layout.
 
 This repository accompanies **DGX Lab PRD v1.0** and provides:
 

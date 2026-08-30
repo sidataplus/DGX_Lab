@@ -15,4 +15,5 @@ Thumbs.db
 __pycache__/
 *.py[cod]
 /temp/
+/output/playwright/
 /src-tauri/gen/
