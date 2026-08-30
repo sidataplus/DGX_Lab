@@ -48,6 +48,7 @@ jobs:
         run: |
           make check
           python3 scripts/static_rust_sanity.py
+          python3 scripts/build_course_pack.py
           python3 scripts/verify_manifest.py
 
       - name: Set GitHub project-site base path

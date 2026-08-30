@@ -13,7 +13,7 @@ use slurm_model::{
 };
 use std::collections::{BTreeMap, VecDeque};
 use virtual_fs::VirtualFileSystem;
-use workloads::{plan_workload, request_from_command, LogStream};
+use workloads::{LogStream, plan_workload, request_from_command};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct SimulationWorld {
@@ -170,11 +170,8 @@ impl SimulationWorld {
                     .nodes
                     .get_mut(&node_id)
                     .ok_or_else(|| SimError::NodeNotFound(node_id.clone()))?;
-                node.status = if node.running_jobs.is_empty() {
-                    NodeStatus::Idle
-                } else {
-                    NodeStatus::Mixed
-                };
+                node.status =
+                    if node.running_jobs.is_empty() { NodeStatus::Idle } else { NodeStatus::Mixed };
                 node.drain_reason = None;
                 self.record(WorldEventKind::NodeResumed { node_id });
                 self.schedule_at(self.now, ScheduledEventKind::TrySchedule);
@@ -185,11 +182,10 @@ impl SimulationWorld {
                     .nodes
                     .get_mut(&node_id)
                     .ok_or_else(|| SimError::NodeNotFound(node_id.clone()))?;
-                let gpu = node
-                    .gpus
-                    .iter_mut()
-                    .find(|gpu| gpu.index == gpu_index)
-                    .ok_or_else(|| SimError::GpuNotFound { node_id: node_id.clone(), gpu_index })?;
+                let gpu =
+                    node.gpus.iter_mut().find(|gpu| gpu.index == gpu_index).ok_or_else(|| {
+                        SimError::GpuNotFound { node_id: node_id.clone(), gpu_index }
+                    })?;
                 gpu.health = GpuHealth::Warning;
                 self.record(WorldEventKind::GpuHealthChanged {
                     node_id,
@@ -203,11 +199,10 @@ impl SimulationWorld {
                     .nodes
                     .get_mut(&node_id)
                     .ok_or_else(|| SimError::NodeNotFound(node_id.clone()))?;
-                let gpu = node
-                    .gpus
-                    .iter_mut()
-                    .find(|gpu| gpu.index == gpu_index)
-                    .ok_or_else(|| SimError::GpuNotFound { node_id: node_id.clone(), gpu_index })?;
+                let gpu =
+                    node.gpus.iter_mut().find(|gpu| gpu.index == gpu_index).ok_or_else(|| {
+                        SimError::GpuNotFound { node_id: node_id.clone(), gpu_index }
+                    })?;
                 gpu.health = GpuHealth::Ok;
                 self.record(WorldEventKind::GpuHealthChanged {
                     node_id,
@@ -381,10 +376,7 @@ impl SimulationWorld {
     }
 
     fn schedule_at(&mut self, at: SimTimeMs, kind: ScheduledEventKind) {
-        let event = ScheduledEvent {
-            id: EventId(self.next_event_id),
-            kind,
-        };
+        let event = ScheduledEvent { id: EventId(self.next_event_id), kind };
         self.next_event_id = self.next_event_id.saturating_add(1);
         self.queue.push(at, event);
     }
@@ -491,11 +483,7 @@ pub enum WorldEventKind {
 }
 
 fn resolve_output_path(spec: &JobSpec, job_id: JobId, stderr: bool) -> String {
-    let configured = if stderr {
-        spec.error_path.as_deref()
-    } else {
-        spec.output_path.as_deref()
-    };
+    let configured = if stderr { spec.error_path.as_deref() } else { spec.output_path.as_deref() };
     if let Some(template) = configured {
         let expanded = template
             .replace("%x", &spec.name)
@@ -546,12 +534,7 @@ mod tests {
     fn gpu_job(name: &str, gpus: u16) -> JobSpec {
         JobSpec {
             name: name.into(),
-            resources: Tres {
-                cpus: 8,
-                memory_mib: 64 * 1024,
-                gpu_type: Some("h200".into()),
-                gpus,
-            },
+            resources: Tres { cpus: 8, memory_mib: 64 * 1024, gpu_type: Some("h200".into()), gpus },
             command: "python train.py --batch-size 64 --epochs 2".into(),
             workload_id: "pytorch-training-v1".into(),
             ..JobSpec::default()
@@ -580,4 +563,3 @@ mod tests {
         assert_eq!(world.jobs[&second].status, JobStatus::Running);
     }
 }
-

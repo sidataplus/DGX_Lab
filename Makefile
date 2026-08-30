@@ -9,6 +9,7 @@ PAGES_BASE ?= /DGX_Lab/
 validate:
 	$(PYTHON) scripts/validate_all.py
 	$(PYTHON) scripts/check_forbidden_apis.py
+	$(PYTHON) -m unittest discover -s tests -p 'test_*.py'
 
 check: validate
 	cargo fmt --all -- --check

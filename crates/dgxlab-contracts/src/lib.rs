@@ -46,7 +46,9 @@ numeric_id!(EventId, u64);
 numeric_id!(StepId, u32);
 numeric_id!(SnapshotId, u64);
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[derive(
+    Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
+)]
 #[serde(transparent)]
 pub struct SimTimeMs(pub u64);
 
@@ -124,53 +126,51 @@ impl TerminalLine {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum SimRequest {
-    Initialize { scenario_id: String, seed: u64 },
-    ExecuteCommand { command: String },
-    AdvanceClock { delta_ms: u64 },
-    SetClockSpeed { multiplier: u32 },
+    Initialize {
+        scenario_id: String,
+        seed: u64,
+    },
+    ExecuteCommand {
+        command: String,
+    },
+    AdvanceClock {
+        delta_ms: u64,
+    },
+    SetClockSpeed {
+        multiplier: u32,
+    },
     Pause,
     Resume,
-    Reset { scenario_id: String, seed: u64 },
+    Reset {
+        scenario_id: String,
+        seed: u64,
+    },
     Snapshot,
-    CancelJob { job_id: u64 },
+    CancelJob {
+        job_id: u64,
+    },
     /// Reveal the next progressive lab hint (recorded separately from correctness).
     UseHint,
     /// Read a virtual-filesystem text file (editor / log inspection).
-    ReadVfs { path: String },
+    ReadVfs {
+        path: String,
+    },
     /// Write a virtual-filesystem text file (never host paths).
-    WriteVfs { path: String, content: String },
+    WriteVfs {
+        path: String,
+        content: String,
+    },
 }
 
 /// Responses from the simulation session to the UI.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum SimResponse {
-    Ready {
-        protocol_version: String,
-        compatibility_version: String,
-        seq: u64,
-        state: UiWorldView,
-    },
-    CommandResult {
-        seq: u64,
-        prompt: String,
-        lines: Vec<TerminalLine>,
-        state: UiWorldView,
-    },
-    State {
-        seq: u64,
-        state: UiWorldView,
-    },
-    Error {
-        code: String,
-        message: String,
-        seq: u64,
-    },
-    FileContent {
-        seq: u64,
-        path: String,
-        content: String,
-    },
+    Ready { protocol_version: String, compatibility_version: String, seq: u64, state: UiWorldView },
+    CommandResult { seq: u64, prompt: String, lines: Vec<TerminalLine>, state: UiWorldView },
+    State { seq: u64, state: UiWorldView },
+    Error { code: String, message: String, seq: u64 },
+    FileContent { seq: u64, path: String, content: String },
 }
 
 /// UI-facing authoritative snapshot. Derived only from the simulation worker.

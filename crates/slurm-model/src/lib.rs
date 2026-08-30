@@ -299,12 +299,8 @@ impl ClusterState {
     #[must_use]
     pub fn dgx_h200_8() -> Self {
         let node_id = "dgx-h200-01".to_string();
-        let capacity = Tres {
-            cpus: 224,
-            memory_mib: 1_857_528,
-            gpu_type: Some("h200".into()),
-            gpus: 8,
-        };
+        let capacity =
+            Tres { cpus: 224, memory_mib: 1_857_528, gpu_type: Some("h200".into()), gpus: 8 };
         let gpus = (0..8)
             .map(|index| GpuDevice {
                 index,
@@ -316,12 +312,7 @@ impl ClusterState {
         let node = NodeState {
             id: node_id.clone(),
             capacity,
-            allocated: Tres {
-                cpus: 0,
-                memory_mib: 0,
-                gpu_type: Some("h200".into()),
-                gpus: 0,
-            },
+            allocated: Tres { cpus: 0, memory_mib: 0, gpu_type: Some("h200".into()), gpus: 0 },
             gpus,
             status: NodeStatus::Idle,
             drain_reason: None,

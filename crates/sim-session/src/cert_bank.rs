@@ -177,7 +177,7 @@ pub fn score_certification(
 }
 
 fn percent(earned: u32, possible: u32) -> u8 {
-    if possible == 0 { 0 } else { ((earned * 100) / possible) as u8 }
+    earned.saturating_mul(100).checked_div(possible).unwrap_or(0) as u8
 }
 
 fn default_empty_answer(question: &Question) -> Answer {

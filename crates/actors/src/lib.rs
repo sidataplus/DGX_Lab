@@ -46,10 +46,8 @@ mod tests {
 
     #[test]
     fn actor_actions_are_data_not_callbacks() {
-        let action = ActorAction::DrainNode {
-            node_id: "dgx-h200-01".into(),
-            reason: "maintenance".into(),
-        };
+        let action =
+            ActorAction::DrainNode { node_id: "dgx-h200-01".into(), reason: "maintenance".into() };
         let encoded = serde_json::to_string(&action).unwrap();
         assert!(encoded.contains("drain_node"));
     }
