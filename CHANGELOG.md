@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Added GitHub Pages as the public static web distribution.
+- Added a repository-path-aware Trunk build, generated-artifact validation, and deployment workflow.
+- Added public independence, local-execution, and browser-storage notices.
+- Documented repository setup, trust boundaries, custom-domain migration, and rollback.
+
 ## 0.1.0-dev-pack — 2026-08-05
 
 - Added DGX Lab PRD v1.0 and requirements traceability.

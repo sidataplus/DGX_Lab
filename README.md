@@ -2,7 +2,7 @@
 
 **Interactive SLURM Training Simulator**
 
-DGX Lab is a standalone, deterministic desktop simulation environment for learning SLURM and shared GPU-computing workflows. It presents a generic DGX-scale cluster, simulated concurrent users, synthetic AI workloads, failure scenarios, guided labs, and local certification. It is deliberately incapable of connecting to a real scheduler.
+DGX Lab is a standalone, deterministic simulation environment for learning SLURM and shared GPU-computing workflows. It presents a generic DGX-scale cluster, simulated concurrent users, synthetic AI workloads, failure scenarios, guided labs, and local certification. It is deliberately incapable of connecting to a real scheduler.
 
 ## Learning experience
 
@@ -22,7 +22,7 @@ Every module follows a consistent **Learn → Practice → Assess** rhythm. Lear
 
 This repository accompanies **DGX Lab PRD v1.0** and provides:
 
-- a Tauri 2 + Leptos/Rust/WASM application workspace;
+- a Tauri 2 desktop shell and static GitHub Pages web distribution over one Leptos/Rust/WASM application;
 - a responsive Learn, Practice, and Assess interface;
 - a deterministic simulation core with constrained virtual scheduler, shell, and filesystem;
 - state-backed practical grading and an offline knowledge assessment;
@@ -45,17 +45,30 @@ This repository accompanies **DGX Lab PRD v1.0** and provides:
 | Practical grading and knowledge scoring | State-backed and tested |
 | Scenario compiler and report renderer | Implemented |
 | Leptos CSR UI | Responsive release build produced |
+| GitHub Pages distribution | Path-aware build and deployment workflow implemented |
 | WASM worker API | Native/WASM boundary verified |
 | Tauri 2 shell | Minimal, no real-system commands |
 | Native/WASM compilation evidence | Verified in the current workspace |
 | Cargo lockfile | Resolved and committed |
 | Signed installers | Deferred to a signing/notarization release lane |
 
-The current release has native Rust test evidence, a verified WebAssembly build, strict linting, browser QA at desktop and phone widths, validated course content, 241 requirement links, and a checksum-verified course pack. The browser build remains offline and never executes learner commands on the host.
+The current release has native Rust test evidence, a verified WebAssembly build, strict linting, browser QA at desktop and phone widths, validated course content, 241 requirement links, and a checksum-verified course pack. The browser build runs entirely client-side and never executes learner commands on the host.
+
+## Public web distribution
+
+The canonical web edition is built from `crates/web-ui` and deployed from `main` by `.github/workflows/pages.yml`. GitHub Pages receives a generated static artifact rather than the checked-in `dist/` reference snapshot. The workflow derives the repository project path, rebuilds the Leptos/WASM application, and rejects broken or root-hosted asset references before deployment.
+
+Reproduce the project-site build locally with:
+
+```bash
+make web-pages PAGES_BASE=/DGX_Lab/
+```
+
+A repository administrator must select **GitHub Actions** as the Pages source before the first production deployment. See `docs/runbooks/GITHUB_PAGES.md` for setup, trust boundaries, custom-domain migration, and rollback.
 
 ## Fastest way to inspect the product
 
-Serve the checked-in release build locally:
+Serve the checked-in reference release build locally:
 
 ```bash
 cd crates/web-ui/dist
@@ -88,22 +101,22 @@ See `docs/runbooks/LOCAL_DEVELOPMENT.md` for OS prerequisites and the build orde
 ## Architectural boundary
 
 ```text
-Tauri 2 desktop shell
-        │
-        ▼
-Leptos CSR interface (WASM)
-        │
-        ▼
-Rust simulation worker (WASM)
-        │
-        ├── virtual scheduler
-        ├── virtual users
-        ├── virtual shell/filesystem
-        ├── synthetic workloads
-        ├── grading and assessment
-        └── deterministic event replay
+GitHub Pages static host or Tauri 2 desktop shell
+                         │
+                         ▼
+              Leptos CSR interface (WASM)
+                         │
+                         ▼
+              Rust simulation worker (WASM)
+                         │
+                         ├── virtual scheduler
+                         ├── virtual users
+                         ├── virtual shell/filesystem
+                         ├── synthetic workloads
+                         ├── grading and assessment
+                         └── deterministic event replay
 
-NO SSH · NO SHELL · NO REAL SLURM · NO EXTERNAL NETWORK
+NO SSH · NO SHELL · NO REAL SLURM · NO RUNTIME EXTERNAL NETWORK
 ```
 
 The default cluster profile generalizes an eight-H200, 224-logical-CPU, cgroup-isolated Slurm environment into non-institutional names and paths. Production hostnames, IP addresses, credentials, and operational paths are intentionally absent.

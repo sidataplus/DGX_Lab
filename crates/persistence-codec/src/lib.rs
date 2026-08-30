@@ -2,7 +2,7 @@
 
 //! Canonical session serialization and integrity checks.
 
-use dgxlab_contracts::{SessionId, SESSION_FORMAT_VERSION};
+use dgxlab_contracts::{SESSION_FORMAT_VERSION, SessionId};
 use grading::EvidenceLedger;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};

@@ -432,11 +432,9 @@ fn lab_progress(session: &SimSession) -> (Vec<UiLabStep>, u8, bool) {
             critical: result.critical,
         })
         .collect::<Vec<_>>();
-    let percent = if score.possible_points == 0 {
-        0
-    } else {
-        ((score.earned_points * 100) / score.possible_points) as u8
-    };
+    let percent =
+        score.earned_points.saturating_mul(100).checked_div(score.possible_points).unwrap_or(0)
+            as u8;
     let complete = score.all_critical_passed && percent >= 80;
     (steps, percent, complete)
 }

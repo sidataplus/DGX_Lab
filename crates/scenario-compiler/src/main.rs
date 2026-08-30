@@ -43,8 +43,11 @@ fn main() -> Result<(), CompilerError> {
     }
     for source in sources {
         let bytes = fs::read(&source)?;
-        let scenario: ScenarioDefinition = serde_yaml::from_slice(&bytes)
-            .map_err(|source_error| CompilerError::Yaml { path: source.clone(), source: source_error })?;
+        let scenario: ScenarioDefinition =
+            serde_yaml::from_slice(&bytes).map_err(|source_error| CompilerError::Yaml {
+                path: source.clone(),
+                source: source_error,
+            })?;
         validate(&scenario, &source)?;
         let digest = hex::encode(Sha256::digest(&bytes));
         let compiled = CompiledScenario {

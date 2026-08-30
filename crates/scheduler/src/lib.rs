@@ -52,10 +52,7 @@ pub fn validate_job(cluster: &ClusterState, spec: &JobSpec) -> Result<(), Valida
     if !cluster.qos.contains_key(&spec.qos) {
         return Err(ValidationError::QosNotFound(spec.qos.clone()));
     }
-    if partition
-        .max_time_ms
-        .is_some_and(|max_time| spec.time_limit_ms > max_time)
-    {
+    if partition.max_time_ms.is_some_and(|max_time| spec.time_limit_ms > max_time) {
         return Err(ValidationError::TimeLimitTooLong);
     }
     let satisfiable = partition
@@ -209,14 +206,9 @@ fn apply_allocation(
     requested: &Tres,
     allocation: &Allocation,
 ) {
-    let node = cluster
-        .nodes
-        .get_mut(&allocation.node_id)
-        .expect("allocation node is known");
-    node.allocated = node
-        .allocated
-        .checked_add(requested)
-        .expect("scheduler only combines compatible TRES");
+    let node = cluster.nodes.get_mut(&allocation.node_id).expect("allocation node is known");
+    node.allocated =
+        node.allocated.checked_add(requested).expect("scheduler only combines compatible TRES");
     for index in &allocation.gpu_indices {
         if let Some(gpu) = node.gpus.iter_mut().find(|gpu| gpu.index == *index) {
             gpu.allocated_to = Some(job_id);
@@ -254,12 +246,7 @@ mod tests {
 
     fn job(id: u64, gpus: u16) -> JobRecord {
         let spec = JobSpec {
-            resources: Tres {
-                cpus: 8,
-                memory_mib: 65_536,
-                gpu_type: Some("h200".into()),
-                gpus,
-            },
+            resources: Tres { cpus: 8, memory_mib: 65_536, gpu_type: Some("h200".into()), gpus },
             ..JobSpec::default()
         };
         JobRecord {

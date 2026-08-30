@@ -98,17 +98,27 @@ pub fn request_from_command(command: &str, workload_id: &str) -> WorkloadRequest
     request
 }
 
-pub fn plan_workload(spec: &JobSpec, request: &WorkloadRequest, start_time: SimTimeMs) -> WorkloadPlan {
+pub fn plan_workload(
+    spec: &JobSpec,
+    request: &WorkloadRequest,
+    start_time: SimTimeMs,
+) -> WorkloadPlan {
     let natural_duration_ms = natural_duration(request);
     let inferred_failure = request.forced_failure.or_else(|| infer_failure(spec, request));
     let (terminal_status, failure_at_ms) = match inferred_failure {
-        Some(FailureMode::GpuOutOfMemory) => (JobStatus::OutOfMemory, natural_duration_ms.min(45_000)),
-        Some(FailureMode::HostOutOfMemory) => (JobStatus::OutOfMemory, natural_duration_ms.min(75_000)),
+        Some(FailureMode::GpuOutOfMemory) => {
+            (JobStatus::OutOfMemory, natural_duration_ms.min(45_000))
+        }
+        Some(FailureMode::HostOutOfMemory) => {
+            (JobStatus::OutOfMemory, natural_duration_ms.min(75_000))
+        }
         Some(FailureMode::ScriptFailure | FailureMode::MissingInput) => {
             (JobStatus::Failed, natural_duration_ms.min(2_000))
         }
         Some(FailureMode::NodeFailure) => (JobStatus::NodeFail, natural_duration_ms.min(30_000)),
-        None if spec.time_limit_ms < natural_duration_ms => (JobStatus::Timeout, spec.time_limit_ms),
+        None if spec.time_limit_ms < natural_duration_ms => {
+            (JobStatus::Timeout, spec.time_limit_ms)
+        }
         None => (JobStatus::Completed, natural_duration_ms),
     };
     let mut logs = training_logs(request, terminal_status, failure_at_ms);
@@ -119,7 +129,8 @@ pub fn plan_workload(spec: &JobSpec, request: &WorkloadRequest, start_time: SimT
             text: "slurmstepd: error: job cancelled due to time limit".into(),
         });
     }
-    let artifacts = checkpoint_artifacts(request, terminal_status, failure_at_ms, natural_duration_ms);
+    let artifacts =
+        checkpoint_artifacts(request, terminal_status, failure_at_ms, natural_duration_ms);
     let telemetry = telemetry_curve(spec, request, terminal_status, failure_at_ms);
     WorkloadPlan {
         workload_id: request.workload_id.clone(),
@@ -161,7 +172,11 @@ fn infer_failure(spec: &JobSpec, request: &WorkloadRequest) -> Option<FailureMod
     None
 }
 
-fn training_logs(request: &WorkloadRequest, status: JobStatus, terminal_after_ms: u64) -> Vec<PlannedLogLine> {
+fn training_logs(
+    request: &WorkloadRequest,
+    status: JobStatus,
+    terminal_after_ms: u64,
+) -> Vec<PlannedLogLine> {
     if request.workload_id == "interactive-shell-v1" {
         return vec![PlannedLogLine {
             offset_ms: 0,
@@ -246,11 +261,8 @@ fn telemetry_curve(
         .map(|point| {
             let offset = terminal_after_ms.saturating_mul(point) / points;
             let wave = ((point * 17 + request.batch_size as u64) % 23) as u8;
-            let gpu_memory = if spec.resources.gpus > 0 {
-                30_000 + request.batch_size as u64 * 420
-            } else {
-                0
-            };
+            let gpu_memory =
+                if spec.resources.gpus > 0 { 30_000 + request.batch_size as u64 * 420 } else { 0 };
             TelemetryPoint {
                 offset_ms: offset,
                 cpu_percent: 35 + wave.min(55),

@@ -33,32 +33,23 @@ impl SimWorkerRuntime {
     }
 
     pub fn execute(&mut self, command: &str) -> Result<JsValue, JsValue> {
-        let response = self.session.handle(SimRequest::ExecuteCommand {
-            command: command.into(),
-        });
+        let response = self.session.handle(SimRequest::ExecuteCommand { command: command.into() });
         to_js(&response)
     }
 
     pub fn advance_by(&mut self, delta_ms: u64) -> Result<JsValue, JsValue> {
-        let response = self
-            .session
-            .handle(SimRequest::AdvanceClock { delta_ms });
+        let response = self.session.handle(SimRequest::AdvanceClock { delta_ms });
         to_js(&response)
     }
 
     pub fn reset(&mut self, scenario_id: &str, seed: u64) -> Result<JsValue, JsValue> {
-        let response = self.session.handle(SimRequest::Reset {
-            scenario_id: scenario_id.into(),
-            seed,
-        });
+        let response =
+            self.session.handle(SimRequest::Reset { scenario_id: scenario_id.into(), seed });
         to_js(&response)
     }
 
     pub fn snapshot(&self) -> Result<JsValue, JsValue> {
-        to_js(&WorkerSnapshotView {
-            seq: self.session.seq(),
-            state: self.session.view(),
-        })
+        to_js(&WorkerSnapshotView { seq: self.session.seq(), state: self.session.view() })
     }
 
     pub fn snapshot_json(&self) -> Result<String, JsValue> {

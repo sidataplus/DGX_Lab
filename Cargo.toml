@@ -43,7 +43,7 @@ version = "0.1.0"
 edition = "2024"
 license = "Apache-2.0"
 authors = ["DGX Lab contributors"]
-repository = "https://example.invalid/dgx-lab"
+repository = "https://github.com/sidataplus/DGX_Lab"
 rust-version = "1.88"
 
 [workspace.dependencies]

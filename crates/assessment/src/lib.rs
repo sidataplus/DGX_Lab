@@ -103,13 +103,13 @@ pub struct QuestionScore {
     pub feedback: String,
 }
 
-pub fn score_question(question: &Question, answer: &Answer) -> Result<QuestionScore, AssessmentError> {
+pub fn score_question(
+    question: &Question,
+    answer: &Answer,
+) -> Result<QuestionScore, AssessmentError> {
     let possible = question.points().saturating_mul(1_000);
     match (question, answer) {
-        (
-            Question::SingleChoice { id, correct, .. },
-            Answer::SingleChoice { option_id },
-        ) => {
+        (Question::SingleChoice { id, correct, .. }, Answer::SingleChoice { option_id }) => {
             let is_correct = option_id == correct;
             Ok(QuestionScore {
                 question_id: id.clone(),
@@ -120,12 +120,7 @@ pub fn score_question(question: &Question, answer: &Answer) -> Result<QuestionSc
             })
         }
         (
-            Question::MultiSelect {
-                id,
-                correct,
-                incorrect_penalty_basis_points,
-                ..
-            },
+            Question::MultiSelect { id, correct, incorrect_penalty_basis_points, .. },
             Answer::MultiSelect { option_ids },
         ) => {
             let correct_selected = option_ids.intersection(correct).count() as u32;
@@ -147,16 +142,11 @@ pub fn score_question(question: &Question, answer: &Answer) -> Result<QuestionSc
                 ),
             })
         }
-        (
-            Question::FillBlank { id, blanks, .. },
-            Answer::FillBlank { values },
-        ) => {
+        (Question::FillBlank { id, blanks, .. }, Answer::FillBlank { values }) => {
             let correct_count = blanks
                 .iter()
                 .filter(|blank| {
-                    values
-                        .get(&blank.id)
-                        .is_some_and(|value| blank_matches(blank, value))
+                    values.get(&blank.id).is_some_and(|value| blank_matches(blank, value))
                 })
                 .count() as u32;
             let denominator = blanks.len().max(1) as u32;
@@ -169,19 +159,13 @@ pub fn score_question(question: &Question, answer: &Answer) -> Result<QuestionSc
                 feedback: format!("{correct_count}/{} blank(s) correct", blanks.len()),
             })
         }
-        _ => Err(AssessmentError::AnswerTypeMismatch {
-            question_id: question.id().into(),
-        }),
+        _ => Err(AssessmentError::AnswerTypeMismatch { question_id: question.id().into() }),
     }
 }
 
 fn blank_matches(blank: &BlankDefinition, submitted: &str) -> bool {
-    let normalized = normalize_text(
-        submitted,
-        blank.case_insensitive,
-        blank.trim,
-        blank.normalize_whitespace,
-    );
+    let normalized =
+        normalize_text(submitted, blank.case_insensitive, blank.trim, blank.normalize_whitespace);
     blank.accepted.iter().any(|accepted| match accepted {
         AcceptedAnswer::Literal { value } => {
             normalized
@@ -254,10 +238,8 @@ pub fn finalize_certification(
     let knowledge_numerator = u16::from(multiple_choice_percent)
         * u16::from(weights.multiple_choice)
         + u16::from(fill_blank_percent) * u16::from(weights.fill_blank);
-    let knowledge_percent = knowledge_numerator
-        .checked_div(knowledge_weight)
-        .map(|value| value as u8)
-        .unwrap_or(0);
+    let knowledge_percent =
+        knowledge_numerator.checked_div(knowledge_weight).map(|value| value as u8).unwrap_or(0);
     let overall_percent = ((u16::from(practical_percent) * u16::from(weights.practical)
         + u16::from(multiple_choice_percent) * u16::from(weights.multiple_choice)
         + u16::from(fill_blank_percent) * u16::from(weights.fill_blank))
@@ -308,9 +290,8 @@ mod tests {
             points: 2,
             explanation: String::new(),
         };
-        let answer = Answer::FillBlank {
-            values: BTreeMap::from([("blank-1".into(), " GPU:H200 ".into())]),
-        };
+        let answer =
+            Answer::FillBlank { values: BTreeMap::from([("blank-1".into(), " GPU:H200 ".into())]) };
         let score = score_question(&question, &answer).unwrap();
         assert!(score.correct);
     }

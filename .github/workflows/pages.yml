@@ -1,0 +1,86 @@
+name: GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build static web distribution
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install content-validation dependencies
+        run: python -m pip install --disable-pip-version-check PyYAML jsonschema
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+          components: rustfmt, clippy
+
+      - name: Cache Rust build state
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install pinned Trunk
+        run: cargo install trunk --version 0.21.14 --locked
+
+      - name: Validate source and simulation boundary
+        run: |
+          make check
+          python3 scripts/static_rust_sanity.py
+          python3 scripts/build_course_pack.py
+          python3 scripts/verify_manifest.py
+
+      - name: Set GitHub project-site base path
+        run: echo "PAGES_BASE_PATH=/${GITHUB_REPOSITORY#*/}/" >> "$GITHUB_ENV"
+
+      - name: Build static Pages artifact
+        run: |
+          cargo metadata --locked --format-version 1 >/dev/null
+          cd crates/web-ui
+          trunk build --release --public-url "$PAGES_BASE_PATH"
+
+      - name: Validate static Pages artifact
+        run: python3 scripts/validate_pages_dist.py crates/web-ui/dist "$PAGES_BASE_PATH"
+
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: crates/web-ui/dist
+
+  deploy:
+    name: Deploy public web distribution
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

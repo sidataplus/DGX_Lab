@@ -73,11 +73,8 @@ singularity exec --nv /containers/pytorch-lab.sif \
         }
         let mut current = String::from("/");
         for segment in normalized.trim_start_matches('/').split('/') {
-            let next = if current == "/" {
-                format!("/{segment}")
-            } else {
-                format!("{current}/{segment}")
-            };
+            let next =
+                if current == "/" { format!("/{segment}") } else { format!("{current}/{segment}") };
             if !self.nodes.contains_key(&next) {
                 self.insert_child(&current, segment)?;
                 self.nodes.insert(next.clone(), VfsNode::Directory { children: BTreeSet::new() });
@@ -101,9 +98,8 @@ singularity exec --nv /containers/pytorch-lab.sif \
             Some(VfsNode::Directory { .. }) => return Err(VfsError::IsDirectory(normalized)),
             None => 0,
         };
-        let projected = current_size
-            .saturating_sub(previous_size)
-            .saturating_add(content.len() as u64);
+        let projected =
+            current_size.saturating_sub(previous_size).saturating_add(content.len() as u64);
         if projected > self.quota_bytes {
             return Err(VfsError::QuotaExceeded {
                 requested_bytes: projected,
@@ -263,7 +259,10 @@ mod tests {
 
     #[test]
     fn traversal_cannot_escape_root() {
-        assert_eq!(normalize_path("../../etc/passwd"), Err(VfsError::TraversalDenied("../../etc/passwd".into())));
+        assert_eq!(
+            normalize_path("../../etc/passwd"),
+            Err(VfsError::TraversalDenied("../../etc/passwd".into()))
+        );
     }
 
     #[test]

@@ -1,13 +1,15 @@
-.PHONY: validate check test web tauri prototype clean
+.PHONY: validate check test web web-release web-pages tauri prototype clean
 
 # Prefer real toolchain binaries if ~/.cargo/bin rustup proxies are broken:
 #   export PATH="$HOME/.rustup/toolchains/stable-aarch64-apple-darwin/bin:$HOME/.cargo/bin:$PATH"
 
 PYTHON ?= python3
+PAGES_BASE ?= /DGX_Lab/
 
 validate:
 	$(PYTHON) scripts/validate_all.py
 	$(PYTHON) scripts/check_forbidden_apis.py
+	$(PYTHON) -m unittest discover -s tests -p 'test_*.py'
 
 check: validate
 	cargo fmt --all -- --check
@@ -20,6 +22,15 @@ test:
 
 web:
 	cd crates/web-ui && trunk serve --port 1420 --address 127.0.0.1
+
+web-release:
+	cargo metadata --locked --format-version 1 >/dev/null
+	cd crates/web-ui && trunk build --release
+
+web-pages:
+	cargo metadata --locked --format-version 1 >/dev/null
+	cd crates/web-ui && trunk build --release --public-url "$(PAGES_BASE)"
+	$(PYTHON) scripts/validate_pages_dist.py crates/web-ui/dist "$(PAGES_BASE)"
 
 # Desktop app: Tauri shell + Leptos CSR UI (Trunk on port 1420).
 tauri:
