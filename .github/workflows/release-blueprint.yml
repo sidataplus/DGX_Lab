@@ -13,7 +13,7 @@ jobs:
           python-version: '3.12'
       - run: pip install PyYAML jsonschema
       - run: ./scripts/run_static_checks.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: source-evidence
           path: |
